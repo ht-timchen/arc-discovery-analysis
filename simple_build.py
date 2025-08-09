@@ -8,10 +8,146 @@ import os
 import pandas as pd
 import shutil
 
+def get_for_labels():
+    """Get proper FoR code labels"""
+    # This is a simplified version - in a real app you'd have a complete lookup table
+    labels = {
+        "0101": "Pure Mathematics",
+        "0102": "Applied Mathematics", 
+        "0103": "Numerical and Computational Mathematics",
+        "0104": "Statistics",
+        "0105": "Mathematical Physics",
+        "0201": "Astronomical and Space Sciences",
+        "0202": "Atomic, Molecular, Nuclear, Particle and Plasma Physics",
+        "0203": "Classical Physics",
+        "0204": "Condensed Matter Physics",
+        "0205": "Optical Physics",
+        "0206": "Quantum Physics",
+        "0301": "Analytical Chemistry",
+        "0302": "Inorganic Chemistry",
+        "0303": "Macromolecular and Materials Chemistry",
+        "0304": "Medicinal and Biomolecular Chemistry",
+        "0305": "Organic Chemistry",
+        "0306": "Physical Chemistry (Incl. Structural)",
+        "0307": "Theoretical and Computational Chemistry",
+        "0401": "Atmospheric Sciences",
+        "0402": "Geochemistry",
+        "0403": "Geology",
+        "0404": "Geophysics",
+        "0405": "Oceanography",
+        "0406": "Physical Geography and Environmental Geoscience",
+        "0501": "Ecological Applications",
+        "0502": "Environmental Science and Management",
+        "0503": "Soil Sciences",
+        "0601": "Biochemistry and Cell Biology",
+        "0602": "Ecology",
+        "0603": "Evolutionary Biology",
+        "0604": "Genetics",
+        "0605": "Microbiology",
+        "0606": "Physiology",
+        "0607": "Plant Biology",
+        "0608": "Zoology",
+        "0801": "Artificial Intelligence and Image Processing",
+        "0802": "Computation Theory and Mathematics",
+        "0803": "Computer Software",
+        "0804": "Data Format",
+        "0805": "Distributed Computing",
+        "0806": "Information Systems",
+        "0807": "Library and Information Studies",
+        "0901": "Aerospace Engineering",
+        "0902": "Automotive Engineering",
+        "0903": "Biomedical Engineering",
+        "0904": "Chemical Engineering",
+        "0905": "Civil Engineering",
+        "0906": "Electrical and Electronic Engineering",
+        "0907": "Environmental Engineering",
+        "0908": "Food Sciences",
+        "0909": "Geomatic Engineering",
+        "0910": "Manufacturing Engineering",
+        "0911": "Maritime Engineering",
+        "0912": "Materials Engineering",
+        "0913": "Mechanical Engineering",
+        "0914": "Resources Engineering and Extractive Metallurgy",
+        "0915": "Interdisciplinary Engineering",
+        "1001": "Agricultural Biotechnology",
+        "1002": "Environmental Biotechnology",
+        "1003": "Industrial Biotechnology",
+        "1004": "Medical Biotechnology",
+        "1005": "Communications Technologies",
+        "1006": "Computer Hardware",
+        "1007": "Nanotechnology",
+        "1101": "Medical Biochemistry and Metabolomics",
+        "1102": "Cardiorespiratory Medicine and Haematology",
+        "1103": "Clinical Sciences",
+        "1104": "Complementary and Alternative Medicine",
+        "1106": "Human Movement and Sports Science",
+        "1107": "Immunology",
+        "1108": "Medical Microbiology",
+        "1109": "Neurosciences",
+        "1110": "Nursing",
+        "1111": "Nutrition and Dietetics",
+        "1112": "Oncology and Carcinogenesis",
+        "1113": "Ophthalmology and Optometry",
+        "1114": "Paediatrics and Reproductive Medicine",
+        "1115": "Pharmacology and Pharmaceutical Sciences",
+        "1116": "Medical Physiology",
+        "1117": "Public Health and Health Services",
+        "1201": "Architecture",
+        "1202": "Building",
+        "1203": "Design Practice and Management",
+        "1204": "Engineering Design",
+        "1205": "Urban and Regional Planning",
+        "1301": "Education Systems",
+        "1302": "Curriculum and Pedagogy",
+        "1303": "Specialist Studies In Education",
+        "1401": "Economic Theory",
+        "1402": "Applied Economics",
+        "1403": "Econometrics",
+        "1501": "Accounting, Auditing and Accountability",
+        "1502": "Banking, Finance and Investment",
+        "1503": "Business and Management",
+        "1504": "Commercial Services",
+        "1505": "Marketing",
+        "1506": "Tourism",
+        "1507": "Transportation and Freight Services",
+        "1601": "Anthropology",
+        "1602": "Criminology",
+        "1603": "Demography",
+        "1604": "Human Geography",
+        "1605": "Policy and Administration",
+        "1606": "Political Science",
+        "1607": "Social Work",
+        "1608": "Sociology",
+        "1701": "Psychology",
+        "1702": "Cognitive Sciences",
+        "1801": "Law",
+        "1901": "Art Theory and Criticism",
+        "1902": "Film, Television and Digital Media",
+        "1903": "Journalism and Professional Writing",
+        "1904": "Performing Arts and Creative Writing",
+        "1905": "Visual Arts and Crafts",
+        "2001": "Communication and Media Studies",
+        "2002": "Cultural Studies",
+        "2003": "Language Studies",
+        "2004": "Linguistics",
+        "2005": "Literary Studies",
+        "2101": "Archaeology",
+        "2102": "Curatorial and Related Studies",
+        "2103": "Historical Studies",
+        "2201": "Applied Ethics",
+        "2202": "History and Philosophy of Specific Fields",
+        "2203": "Philosophy",
+        "2204": "Religion and Religious Studies"
+    }
+    return labels
+
 def load_and_process_data():
     """Load and process the ARC data"""
     print("Loading data...")
     df = pd.read_csv('arc_discovery_projects_2010_2025_with_for.csv')
+    
+    # Get proper FoR labels
+    for_labels = get_for_labels()
     
     # Get unique FoR codes
     all_codes = set()
@@ -39,11 +175,19 @@ def load_and_process_data():
     # Get top 30 CIs
     top_cis = sorted(ci_counts.items(), key=lambda x: x[1], reverse=True)[:30]
     
+    # Create proper labels for codes
+    def get_label(code):
+        if code in for_labels:
+            return f"{code} — {for_labels[code]}"
+        else:
+            return f"{code} — {code}"
+    
     return {
-        'specific_codes': [{'value': c, 'label': f"{c} — {c}"} for c in specific_codes],
-        'two_digit_codes': [{'value': c, 'label': f"{c} — {c}"} for c in two_digit_codes],
+        'specific_codes': [{'value': c, 'label': get_label(c)} for c in specific_codes],
+        'two_digit_codes': [{'value': c, 'label': get_label(c)} for c in two_digit_codes],
         'top_cis': [{'ci_name': ci, 'num_projects': count} for ci, count in top_cis],
-        'ci_counts': ci_counts
+        'ci_counts': ci_counts,
+        'df': df  # Keep the dataframe for CI details
     }
 
 def generate_static_files(data):
@@ -66,6 +210,35 @@ def generate_static_files(data):
             'ranked_cis': data['top_cis'],
             'is_overall': True
         }, f, indent=2)
+    
+    # Generate CI detail files for top CIs
+    print("Generating CI detail files...")
+    df = data['df']
+    
+    for ci_name, _ in data['top_cis']:
+        # Get all projects for this CI
+        ci_projects = df[df['chief_investigators'].fillna('').astype(str).str.contains(ci_name, na=False)]
+        
+        projects = []
+        for _, project in ci_projects.iterrows():
+            projects.append({
+                'code': project['code'],
+                'title': project.get('title', ''),
+                'year': project.get('year', ''),
+                'org': project.get('org', ''),
+                'for_primary': project.get('for_primary', ''),
+                'url': f"https://dataportal.arc.gov.au/NCGP/Web/Grant/Grant/{project['code']}"
+            })
+        
+        # Create filename-safe version of CI name
+        safe_name = ci_name.replace(' ', '_').replace(',', '').replace('.', '').replace('(', '').replace(')', '')
+        safe_name = ''.join(c for c in safe_name if c.isalnum() or c == '_')
+        
+        with open(f'build/api/ci_detail_{safe_name}.json', 'w') as f:
+            json.dump({
+                'ci_name': ci_name,
+                'projects': projects
+            }, f, indent=2)
     
     print("Generated API files")
 

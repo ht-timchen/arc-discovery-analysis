@@ -244,8 +244,8 @@ class ARCAnalysisApp {
         
         try {
             // For static site, use pre-generated CI detail files
-            const safeName = encodeURIComponent(selectedCI).replace(/[^a-zA-Z0-9]/g, '');
-            const response = await fetch(`/api/ci_detail_${safeName}.json`);
+            const safeName = selectedCI.replace(/[^a-zA-Z0-9_]/g, '_');
+            const response = await fetch(`api/ci_detail_${safeName}.json?t=${Date.now()}`);
             
             const data = await response.json();
             
