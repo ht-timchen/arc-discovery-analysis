@@ -196,3 +196,4 @@ This project is open source and available under the MIT License.
 ## Support
 
 If you encounter any issues or have questions, please open an issue on GitHub.
+# Updated README
