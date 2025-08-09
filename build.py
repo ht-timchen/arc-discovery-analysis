@@ -37,6 +37,26 @@ def copy_data_file():
     else:
         print(f"Warning: {data_file} not found")
 
+def fix_api_file_extensions():
+    """Fix API file extensions for proper MIME type handling"""
+    api_dir = 'build/api'
+    if os.path.exists(api_dir):
+        for filename in os.listdir(api_dir):
+            if filename == 'for_codes':  # File without extension
+                old_path = os.path.join(api_dir, filename)
+                new_path = os.path.join(api_dir, filename + '.json')
+                os.rename(old_path, new_path)
+                print(f"Renamed {filename} to {filename}.json")
+    
+    # Also check for other API files that might need .json extension
+    api_files = ['ranked_cis', 'ci_detail']
+    for api_file in api_files:
+        api_path = os.path.join(api_dir, api_file)
+        if os.path.exists(api_path):
+            new_path = api_path + '.json'
+            os.rename(api_path, new_path)
+            print(f"Renamed {api_file} to {api_file}.json")
+
 def create_404_page():
     """Create a 404 page for GitHub Pages"""
     html_404 = """<!DOCTYPE html>
@@ -80,6 +100,7 @@ def main():
     # Copy additional files
     copy_static_files()
     copy_data_file()
+    fix_api_file_extensions()
     create_404_page()
     
     print("\nBuild completed successfully!")
