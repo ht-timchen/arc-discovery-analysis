@@ -234,6 +234,11 @@ def main():
         shutil.copy2('debug.html', 'build/')
         print("Copied debug.html")
     
+    # Create .nojekyll file for GitHub Pages
+    with open('build/.nojekyll', 'w') as f:
+        f.write('')
+    print("Created .nojekyll file")
+    
     print("\nBuild completed successfully!")
     print("Static files are in the 'build' directory")
 
