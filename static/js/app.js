@@ -140,16 +140,12 @@ class ARCAnalysisApp {
         this.showLoading();
         
         try {
-            const response = await fetch('/api/ranked_cis', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    selected_codes: this.selectedCodes,
-                    selected_2digit_codes: this.selected2DigitCodes
-                })
-            });
+            // Build query parameters
+            const params = new URLSearchParams();
+            this.selectedCodes.forEach(code => params.append('selected_codes', code));
+            this.selected2DigitCodes.forEach(code => params.append('selected_2digit_codes', code));
+            
+            const response = await fetch(`/api/ranked_cis?${params.toString()}`);
             
             const data = await response.json();
             
@@ -235,16 +231,12 @@ class ARCAnalysisApp {
         this.showLoading();
         
         try {
-            const response = await fetch(`/api/ci_detail/${encodeURIComponent(selectedCI)}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    selected_codes: this.selectedCodes,
-                    selected_2digit_codes: this.selected2DigitCodes
-                })
-            });
+            // Build query parameters
+            const params = new URLSearchParams();
+            this.selectedCodes.forEach(code => params.append('selected_codes', code));
+            this.selected2DigitCodes.forEach(code => params.append('selected_2digit_codes', code));
+            
+            const response = await fetch(`/api/ci_detail/${encodeURIComponent(selectedCI)}?${params.toString()}`);
             
             const data = await response.json();
             

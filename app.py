@@ -89,12 +89,11 @@ def get_for_codes():
         "two_digit_codes": two_digit_codes
     })
 
-@app.route('/api/ranked_cis', methods=['POST'])
+@app.route('/api/ranked_cis', methods=['GET'])
 def get_ranked_cis():
     """Get ranked CIs based on selected FoR codes"""
-    data = request.get_json()
-    selected_codes = data.get('selected_codes', [])
-    selected_2digit_codes = data.get('selected_2digit_codes', [])
+    selected_codes = request.args.getlist('selected_codes')
+    selected_2digit_codes = request.args.getlist('selected_2digit_codes')
     
     if exploded is None:
         return jsonify({"error": "Data not loaded"}), 500
@@ -143,12 +142,11 @@ def get_ranked_cis():
         "is_overall": False
     })
 
-@app.route('/api/ci_detail/<ci_name>', methods=['POST'])
+@app.route('/api/ci_detail/<ci_name>', methods=['GET'])
 def get_ci_detail(ci_name):
     """Get detailed project information for a specific CI"""
-    data = request.get_json()
-    selected_codes = data.get('selected_codes', [])
-    selected_2digit_codes = data.get('selected_2digit_codes', [])
+    selected_codes = request.args.getlist('selected_codes')
+    selected_2digit_codes = request.args.getlist('selected_2digit_codes')
     
     if exploded is None or df is None:
         return jsonify({"error": "Data not loaded"}), 500
