@@ -77,7 +77,7 @@ class ARCAnalysisApp {
 
     async loadForCodes() {
         try {
-            const response = await fetch('/api/for_codes.json');
+            const response = await fetch('api/for_codes.json');
             const data = await response.json();
             
             // Store all codes for filtering later
@@ -142,7 +142,7 @@ class ARCAnalysisApp {
         try {
             // For static site, we'll use the pre-generated overall ranking
             // In a real implementation, you'd need server-side processing for filtering
-            const response = await fetch('/api/ranked_cis.json');
+            const response = await fetch('api/ranked_cis.json');
             
             const data = await response.json();
             
