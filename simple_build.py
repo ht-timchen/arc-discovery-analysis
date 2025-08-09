@@ -215,7 +215,10 @@ def generate_static_files(data):
     print("Generating CI detail files...")
     df = data['df']
     
-    for ci_name, _ in data['top_cis']:
+    for ci_data in data['top_cis']:
+        ci_name = ci_data['ci_name']
+        print(f"  Generating details for: {ci_name}")
+        
         # Get all projects for this CI
         ci_projects = df[df['chief_investigators'].fillna('').astype(str).str.contains(ci_name, na=False)]
         
@@ -233,6 +236,8 @@ def generate_static_files(data):
         # Create filename-safe version of CI name
         safe_name = ci_name.replace(' ', '_').replace(',', '').replace('.', '').replace('(', '').replace(')', '')
         safe_name = ''.join(c for c in safe_name if c.isalnum() or c == '_')
+        
+        print(f"    Creating file: ci_detail_{safe_name}.json with {len(projects)} projects")
         
         with open(f'build/api/ci_detail_{safe_name}.json', 'w') as f:
             json.dump({
