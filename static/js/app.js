@@ -77,8 +77,16 @@ class ARCAnalysisApp {
 
     async loadForCodes() {
         try {
+            console.log('Attempting to load FoR codes...');
             const response = await fetch('api/for_codes.json');
+            console.log('Response status:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
+            console.log('FoR codes loaded successfully:', data);
             
             // Store all codes for filtering later
             this.allSpecificCodes = data.specific_codes;
@@ -96,9 +104,11 @@ class ARCAnalysisApp {
                 this.for2DigitSelector.appendChild(option);
             });
             
+            console.log('FoR codes populated successfully');
+            
         } catch (error) {
             console.error('Error loading FoR codes:', error);
-            this.showError('Failed to load Field of Research codes');
+            this.showError('Failed to load Field of Research codes: ' + error.message);
         }
     }
 
@@ -140,27 +150,30 @@ class ARCAnalysisApp {
         this.showLoading();
         
         try {
+            console.log('Attempting to load ranked CIs...');
             // For static site, we'll use the pre-generated overall ranking
             // In a real implementation, you'd need server-side processing for filtering
             const response = await fetch('api/ranked_cis.json');
+            console.log('Ranked CIs response status:', response.status, response.statusText);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
             
             const data = await response.json();
+            console.log('Ranked CIs loaded successfully:', data);
             
-            if (response.ok) {
-                this.displayResults(data.ranked_cis, data.is_overall);
-                
-                // Restore scroll positions after a short delay
-                setTimeout(() => {
-                    this.forSelector.scrollTop = forSelectorScroll;
-                    this.for2DigitSelector.scrollTop = for2DigitSelectorScroll;
-                }, 10);
-            } else {
-                this.showError(data.error || 'Failed to load results');
-            }
+            this.displayResults(data.ranked_cis, data.is_overall);
+            
+            // Restore scroll positions after a short delay
+            setTimeout(() => {
+                this.forSelector.scrollTop = forSelectorScroll;
+                this.for2DigitSelector.scrollTop = for2DigitSelectorScroll;
+            }, 10);
             
         } catch (error) {
             console.error('Error updating view:', error);
-            this.showError('Failed to load results');
+            this.showError('Failed to load results: ' + error.message);
         }
     }
 
