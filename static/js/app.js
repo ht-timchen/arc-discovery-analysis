@@ -78,7 +78,8 @@ class ARCAnalysisApp {
     async loadForCodes() {
         try {
             console.log('Attempting to load FoR codes...');
-            const response = await fetch('api/for_codes.json');
+            // Add cache-busting parameter to avoid cached 404 responses
+            const response = await fetch('api/for_codes.json?t=' + Date.now());
             console.log('Response status:', response.status, response.statusText);
             
             if (!response.ok) {
@@ -153,7 +154,8 @@ class ARCAnalysisApp {
             console.log('Attempting to load ranked CIs...');
             // For static site, we'll use the pre-generated overall ranking
             // In a real implementation, you'd need server-side processing for filtering
-            const response = await fetch('api/ranked_cis.json');
+            // Add cache-busting parameter to avoid cached 404 responses
+            const response = await fetch('api/ranked_cis.json?t=' + Date.now());
             console.log('Ranked CIs response status:', response.status, response.statusText);
             
             if (!response.ok) {
