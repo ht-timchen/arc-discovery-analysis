@@ -35,9 +35,11 @@ jobs:
         
     - name: Build static site
       run: |
-        python build.py
+        python simple_build.py
         echo "Build directory contents:"
         ls -la build/
+        echo "API directory contents:"
+        ls -la build/api/
         echo "Index.html first few lines:"
         head -10 build/index.html
         
