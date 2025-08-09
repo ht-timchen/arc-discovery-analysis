@@ -229,6 +229,11 @@ def main():
     # Create index.html
     create_index_html()
     
+    # Copy debug page
+    if os.path.exists('debug.html'):
+        shutil.copy2('debug.html', 'build/')
+        print("Copied debug.html")
+    
     print("\nBuild completed successfully!")
     print("Static files are in the 'build' directory")
 

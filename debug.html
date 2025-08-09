@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Debug Test</h1>
+    <div id="status"></div>
+    <div id="data"></div>
+    
+    <script>
+        const statusDiv = document.getElementById('status');
+        const dataDiv = document.getElementById('data');
+        
+        statusDiv.innerHTML = 'Testing API endpoints...';
+        
+        // Test for_codes.json
+        fetch('/api/for_codes.json')
+            .then(response => {
+                statusDiv.innerHTML += '<br>for_codes.json response: ' + response.status + ' ' + response.statusText;
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            })
+            .then(data => {
+                statusDiv.innerHTML += '<br>✅ for_codes.json loaded successfully!';
+                dataDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2).substring(0, 500) + '...</pre>';
+            })
+            .catch(error => {
+                statusDiv.innerHTML += '<br>❌ Error loading for_codes.json: ' + error.message;
+            });
+        
+        // Test ranked_cis.json
+        fetch('/api/ranked_cis.json')
+            .then(response => {
+                statusDiv.innerHTML += '<br>ranked_cis.json response: ' + response.status + ' ' + response.statusText;
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            })
+            .then(data => {
+                statusDiv.innerHTML += '<br>✅ ranked_cis.json loaded successfully!';
+            })
+            .catch(error => {
+                statusDiv.innerHTML += '<br>❌ Error loading ranked_cis.json: ' + error.message;
+            });
+    </script>
+</body>
+</html>
