@@ -77,7 +77,7 @@ class ARCAnalysisApp {
 
     async loadForCodes() {
         try {
-            const response = await fetch('/api/for_codes');
+            const response = await fetch('/api/for_codes.json');
             const data = await response.json();
             
             // Store all codes for filtering later
@@ -140,12 +140,9 @@ class ARCAnalysisApp {
         this.showLoading();
         
         try {
-            // Build query parameters
-            const params = new URLSearchParams();
-            this.selectedCodes.forEach(code => params.append('selected_codes', code));
-            this.selected2DigitCodes.forEach(code => params.append('selected_2digit_codes', code));
-            
-            const response = await fetch(`/api/ranked_cis?${params.toString()}`);
+            // For static site, we'll use the pre-generated overall ranking
+            // In a real implementation, you'd need server-side processing for filtering
+            const response = await fetch('/api/ranked_cis.json');
             
             const data = await response.json();
             
@@ -231,12 +228,9 @@ class ARCAnalysisApp {
         this.showLoading();
         
         try {
-            // Build query parameters
-            const params = new URLSearchParams();
-            this.selectedCodes.forEach(code => params.append('selected_codes', code));
-            this.selected2DigitCodes.forEach(code => params.append('selected_2digit_codes', code));
-            
-            const response = await fetch(`/api/ci_detail/${encodeURIComponent(selectedCI)}?${params.toString()}`);
+            // For static site, use pre-generated CI detail files
+            const safeName = encodeURIComponent(selectedCI).replace(/[^a-zA-Z0-9]/g, '');
+            const response = await fetch(`/api/ci_detail_${safeName}.json`);
             
             const data = await response.json();
             
