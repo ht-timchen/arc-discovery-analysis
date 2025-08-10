@@ -54,11 +54,11 @@ def load_and_process_data():
     
     return df, exploded, for_code_to_name, for_2digit_to_name
 
-def generate_essential_rankings(exploded, df, top_k=30):
-    """Generate comprehensive rankings with all FoR codes"""
+def generate_essential_rankings(exploded, df, top_k=50):
+    """Generate comprehensive rankings with tiered approach"""
     rankings = {}
     
-    # Overall ranking (no filters) - top 30
+    # Overall ranking (no filters) - top 50
     overall_ranking = (
         df.assign(ci_name=df["chief_investigators"].fillna("").astype(str).apply(
             lambda s: [x.strip() for x in s.split(";") if x.strip()]
@@ -71,7 +71,7 @@ def generate_essential_rankings(exploded, df, top_k=30):
     )
     rankings["overall"] = overall_ranking.to_dict('records')
     
-    # Generate rankings for each 2-digit code - top 20
+    # Generate rankings for each 2-digit code - top 50 (broad category)
     for code_2digit in sorted(set([code[:2] for code in exploded["for_code"].unique() if len(code) >= 2])):
         filt = exploded[exploded["for_code"].str.startswith(code_2digit)]
         if len(filt) > 0:
@@ -79,32 +79,46 @@ def generate_essential_rankings(exploded, df, top_k=30):
                 filt.drop_duplicates(subset=["ci_name", "code"])
                     .groupby("ci_name")["code"].nunique().reset_index(name="num_projects")
                     .sort_values("num_projects", ascending=False)
-                    .head(20)
+                    .head(50)  # Top 50 for broad categories
             )
             if len(ranked) > 0:  # Only include if there are results
                 rankings[f"2digit_{code_2digit}"] = ranked.to_dict('records')
     
-    # Generate rankings for ALL specific codes
-    for code in sorted(exploded["for_code"].unique()):
-        filt = exploded[exploded["for_code"] == code]
+    # Generate rankings for 4-digit codes - top 30 (medium specificity)
+    for code_4digit in sorted(set([code[:4] for code in exploded["for_code"].unique() if len(code) >= 4])):
+        filt = exploded[exploded["for_code"].str.startswith(code_4digit)]
         if len(filt) > 0:
             ranked = (
                 filt.drop_duplicates(subset=["ci_name", "code"])
                     .groupby("ci_name")["code"].nunique().reset_index(name="num_projects")
                     .sort_values("num_projects", ascending=False)
-                    .head(15)
+                    .head(30)  # Top 30 for 4-digit codes
             )
             if len(ranked) > 0:
-                rankings[f"specific_{code}"] = ranked.to_dict('records')
+                rankings[f"4digit_{code_4digit}"] = ranked.to_dict('records')
+    
+    # Generate rankings for 6-digit codes - top 10 (specific codes)
+    for code_6digit in sorted(set([code for code in exploded["for_code"].unique() if len(code) == 6])):
+        filt = exploded[exploded["for_code"] == code_6digit]
+        if len(filt) > 0:
+            ranked = (
+                filt.drop_duplicates(subset=["ci_name", "code"])
+                    .groupby("ci_name")["code"].nunique().reset_index(name="num_projects")
+                    .sort_values("num_projects", ascending=False)
+                    .head(10)  # Top 10 for specific 6-digit codes
+            )
+            if len(ranked) > 0:
+                rankings[f"specific_{code_6digit}"] = ranked.to_dict('records')
     
     return rankings
 
 def generate_essential_ci_details(exploded, df):
-    """Generate CI details for top 2000 CIs with 15 projects each"""
+    """Generate CI details with intelligent optimization"""
+    print("Generating essential CI details...")
     ci_details = {}
     
-    # Get top 2000 CIs from overall ranking
-    top_cis = (
+    # Get CI project counts
+    ci_counts = (
         df.assign(ci_name=df["chief_investigators"].fillna("").astype(str).apply(
             lambda s: [x.strip() for x in s.split(";") if x.strip()]
         ))
@@ -112,10 +126,28 @@ def generate_essential_ci_details(exploded, df):
         .dropna(subset=["ci_name"])
         .groupby("ci_name")["code"].nunique().reset_index(name="num_projects")
         .sort_values("num_projects", ascending=False)
-        .head(2000)  # Top 2000 CIs
     )
     
-    for _, row in top_cis.iterrows():
+    # Intelligent selection strategy:
+    # 1. Include all CIs with 3+ projects (productive researchers)
+    # 2. Include top 5000 CIs regardless of project count
+    # 3. For CIs with 1-2 projects, only include if they're in top 5000
+    
+    # Get CIs with 3+ projects
+    productive_cis = ci_counts[ci_counts["num_projects"] >= 3]
+    
+    # Get top 5000 CIs
+    top_5000_cis = ci_counts.head(5000)
+    
+    # Combine: productive CIs + top 5000 (removing duplicates)
+    selected_cis = pd.concat([productive_cis, top_5000_cis]).drop_duplicates(subset=["ci_name"]).sort_values("num_projects", ascending=False)
+    
+    print(f"Selected {len(selected_cis)} CIs for detailed view")
+    print(f"  - CIs with 3+ projects: {len(productive_cis)}")
+    print(f"  - Top 5000 CIs: {len(top_5000_cis)}")
+    print(f"  - Total unique selected: {len(selected_cis)}")
+    
+    for _, row in selected_cis.iterrows():
         ci_name = row["ci_name"]
         # Get all projects for this CI
         ci_projects = df[df["chief_investigators"].fillna("").astype(str).str.contains(ci_name, na=False)]
@@ -134,8 +166,15 @@ def generate_essential_ci_details(exploded, df):
             # Sort by year and code
             rows = rows.sort_values(["funding_commencement_year", "code"], ascending=[False, True])
             
-            # Limit to top 15 projects per CI
-            rows = rows.head(15)
+            # Limit projects based on CI productivity
+            if row["num_projects"] >= 10:
+                max_projects = 20  # Show more for very productive CIs
+            elif row["num_projects"] >= 5:
+                max_projects = 15  # Show more for productive CIs
+            else:
+                max_projects = 10  # Show fewer for less productive CIs
+            
+            rows = rows.head(max_projects)
             
             projects = []
             for _, r in rows.iterrows():
@@ -408,37 +447,50 @@ def create_optimized_html_template():
                     <div class="card-body">
                         <div class="info-badge">
                             <i class="fas fa-info-circle me-1"></i>
-                            Comprehensive version: All FoR codes, top 2000 CIs, 15 projects per CI
+                            Tiered rankings: Top 50 (broad), Top 30 (4-digit), Top 10 (6-digit), 5000 productive CIs
                         </div>
                         
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="for2DigitSelector" class="form-label">
                                     <i class="fas fa-layer-group me-1"></i>
-                                    Broad FoR Categories
+                                    2-Digit FoR Codes
                                 </label>
-                                <select id="for2DigitSelector" class="form-select" multiple size="8">
+                                <select id="for2DigitSelector" class="form-select" multiple size="6">
                                     <!-- Populated by JavaScript -->
                                 </select>
                                 <div class="help-text">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Single-click to select (clears others). Ctrl/Cmd+click to select multiple.
+                                    Single-click to select (clears others).
                                 </div>
                             </div>
-                            <div class="col-md-4">
-                                <label for="forSelector" class="form-label">
+                            <div class="col-md-3">
+                                <label for="for4DigitSelector" class="form-label">
                                     <i class="fas fa-tags me-1"></i>
-                                    Specific FoR Codes
+                                    4-Digit FoR Codes
                                 </label>
-                                <select id="forSelector" class="form-select" multiple size="8">
+                                <select id="for4DigitSelector" class="form-select" multiple size="6">
                                     <!-- Populated by JavaScript -->
                                 </select>
                                 <div class="help-text">
                                     <i class="fas fa-info-circle me-1"></i>
-                                    Single-click to select (clears others). Ctrl/Cmd+click to select multiple.
+                                    Single-click to select (clears others).
                                 </div>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
+                                <label for="for6DigitSelector" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>
+                                    6-Digit FoR Codes
+                                </label>
+                                <select id="for6DigitSelector" class="form-select" multiple size="6">
+                                    <!-- Populated by JavaScript -->
+                                </select>
+                                <div class="help-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Single-click to select (clears others).
+                                </div>
+                            </div>
+                            <div class="col-md-3">
                                 <label for="yearSelector" class="form-label">
                                     <i class="fas fa-calendar me-1"></i>
                                     Starting Year
@@ -537,8 +589,9 @@ def create_optimized_html_template():
             }
 
             initializeElements() {
-                this.forSelector = document.getElementById('forSelector');
                 this.for2DigitSelector = document.getElementById('for2DigitSelector');
+                this.for4DigitSelector = document.getElementById('for4DigitSelector');
+                this.for6DigitSelector = document.getElementById('for6DigitSelector');
                 this.yearSelector = document.getElementById('yearSelector');
                 this.clearFiltersBtn = document.getElementById('clearFilters');
                 this.resultsTable = document.getElementById('resultsTable');
@@ -549,44 +602,56 @@ def create_optimized_html_template():
                 this.ciDetailTitle = document.getElementById('ciDetailTitle');
                 this.ciDetailContent = document.getElementById('ciDetailContent');
                 
-                this.selectedCodes = [];
                 this.selected2DigitCodes = [];
+                this.selected4DigitCodes = [];
+                this.selected6DigitCodes = [];
                 this.selectedYear = "";
                 this.currentCIs = [];
                 this.selectedCI = null;
             }
 
             bindEvents() {
-                this.forSelector.addEventListener('change', () => this.updateView());
                 this.for2DigitSelector.addEventListener('change', () => {
-                    this.filterSpecificCodes();
+                    this.filter4DigitCodes();
                     this.updateView();
                 });
+                this.for2DigitSelector.addEventListener('click', () => {
+                    // Clear 4-digit and 6-digit selections when clicking on 2-digit
+                    this.for4DigitSelector.selectedIndex = -1;
+                    this.for6DigitSelector.selectedIndex = -1;
+                    // Update view after clearing
+                    setTimeout(() => this.updateView(), 0);
+                });
+                
+                this.for4DigitSelector.addEventListener('change', () => {
+                    this.filter6DigitCodes();
+                    this.updateView();
+                });
+                this.for4DigitSelector.addEventListener('click', () => {
+                    // Clear 6-digit selections when clicking on 4-digit
+                    this.for6DigitSelector.selectedIndex = -1;
+                    // Update view after clearing
+                    setTimeout(() => this.updateView(), 0);
+                });
+                
+                this.for6DigitSelector.addEventListener('change', () => this.updateView());
                 this.yearSelector.addEventListener('change', () => this.updateView());
                 this.clearFiltersBtn.addEventListener('click', () => this.clearFilters());
             }
 
             loadData() {
                 // Populate FoR codes
-                this.allSpecificCodes = EMBEDDED_DATA.forCodes.specific_codes;
                 this.allTwoDigitCodes = EMBEDDED_DATA.forCodes.two_digit_codes;
+                this.allFourDigitCodes = EMBEDDED_DATA.forCodes.four_digit_codes;
+                this.allSixDigitCodes = EMBEDDED_DATA.forCodes.six_digit_codes;
                 
-                this.populateSpecificCodes(this.allSpecificCodes);
                 this.populate2DigitCodes(this.allTwoDigitCodes);
+                this.populate4DigitCodes(this.allFourDigitCodes);
+                this.populate6DigitCodes(this.allSixDigitCodes);
                 this.populateYears(EMBEDDED_DATA.forCodes.years);
                 
                 // Show overall ranking initially
                 this.updateView();
-            }
-
-            populateSpecificCodes(codesToShow) {
-                this.forSelector.innerHTML = '';
-                codesToShow.forEach(code => {
-                    const option = document.createElement('option');
-                    option.value = code.value;
-                    option.textContent = code.label;
-                    this.forSelector.appendChild(option);
-                });
             }
 
             populate2DigitCodes(codes) {
@@ -596,6 +661,26 @@ def create_optimized_html_template():
                     option.value = code.value;
                     option.textContent = code.label;
                     this.for2DigitSelector.appendChild(option);
+                });
+            }
+
+            populate4DigitCodes(codes) {
+                this.for4DigitSelector.innerHTML = '';
+                codes.forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code.value;
+                    option.textContent = code.label;
+                    this.for4DigitSelector.appendChild(option);
+                });
+            }
+
+            populate6DigitCodes(codes) {
+                this.for6DigitSelector.innerHTML = '';
+                codes.forEach(code => {
+                    const option = document.createElement('option');
+                    option.value = code.value;
+                    option.textContent = code.label;
+                    this.for6DigitSelector.appendChild(option);
                 });
             }
 
@@ -609,22 +694,47 @@ def create_optimized_html_template():
                 });
             }
 
-            filterSpecificCodes() {
-                const selectedBroadCodes = Array.from(this.for2DigitSelector.selectedOptions).map(opt => opt.value);
+            filter4DigitCodes() {
+                const selected2DigitCodes = Array.from(this.for2DigitSelector.selectedOptions).map(opt => opt.value);
                 
-                if (selectedBroadCodes.length === 0) {
-                    this.populateSpecificCodes(this.allSpecificCodes);
+                // Clear 4-digit and 6-digit selections when 2-digit changes
+                this.for4DigitSelector.selectedIndex = -1;
+                this.for6DigitSelector.selectedIndex = -1;
+                
+                if (selected2DigitCodes.length === 0) {
+                    // Show all 4-digit codes
+                    this.populate4DigitCodes(this.allFourDigitCodes);
                 } else {
-                    const filteredCodes = this.allSpecificCodes.filter(code => {
-                        return selectedBroadCodes.some(broadCode => code.value.startsWith(broadCode));
+                    // Filter 4-digit codes to only show those that start with selected 2-digit codes
+                    const filteredCodes = this.allFourDigitCodes.filter(code => {
+                        return selected2DigitCodes.some(twoDigitCode => code.value.startsWith(twoDigitCode));
                     });
-                    this.populateSpecificCodes(filteredCodes);
+                    this.populate4DigitCodes(filteredCodes);
+                }
+            }
+
+            filter6DigitCodes() {
+                const selected4DigitCodes = Array.from(this.for4DigitSelector.selectedOptions).map(opt => opt.value);
+                
+                // Clear 6-digit selections when 4-digit changes
+                this.for6DigitSelector.selectedIndex = -1;
+                
+                if (selected4DigitCodes.length === 0) {
+                    // Show all 6-digit codes
+                    this.populate6DigitCodes(this.allSixDigitCodes);
+                } else {
+                    // Filter 6-digit codes to only show those that start with selected 4-digit codes
+                    const filteredCodes = this.allSixDigitCodes.filter(code => {
+                        return selected4DigitCodes.some(fourDigitCode => code.value.startsWith(fourDigitCode));
+                    });
+                    this.populate6DigitCodes(filteredCodes);
                 }
             }
 
             updateView() {
-                this.selectedCodes = Array.from(this.forSelector.selectedOptions).map(opt => opt.value);
                 this.selected2DigitCodes = Array.from(this.for2DigitSelector.selectedOptions).map(opt => opt.value);
+                this.selected4DigitCodes = Array.from(this.for4DigitSelector.selectedOptions).map(opt => opt.value);
+                this.selected6DigitCodes = Array.from(this.for6DigitSelector.selectedOptions).map(opt => opt.value);
                 this.selectedYear = this.yearSelector.value;
                 
                 // Find the appropriate ranking
@@ -632,9 +742,16 @@ def create_optimized_html_template():
                 let rankedCIs = EMBEDDED_DATA.rankings.overall;
                 let isOverall = true;
                 
-                if (this.selectedCodes.length > 0) {
-                    // Use the first selected specific code
-                    rankingKey = `specific_${this.selectedCodes[0]}`;
+                if (this.selected6DigitCodes.length > 0) {
+                    // Use the first selected 6-digit code
+                    rankingKey = `specific_${this.selected6DigitCodes[0]}`;
+                    if (EMBEDDED_DATA.rankings[rankingKey]) {
+                        rankedCIs = EMBEDDED_DATA.rankings[rankingKey];
+                        isOverall = false;
+                    }
+                } else if (this.selected4DigitCodes.length > 0) {
+                    // Use the first selected 4-digit code
+                    rankingKey = `4digit_${this.selected4DigitCodes[0]}`;
                     if (EMBEDDED_DATA.rankings[rankingKey]) {
                         rankedCIs = EMBEDDED_DATA.rankings[rankingKey];
                         isOverall = false;
@@ -760,17 +877,22 @@ def create_optimized_html_template():
             }
 
             clearFilters() {
-                this.forSelector.selectedIndex = -1;
                 this.for2DigitSelector.selectedIndex = -1;
+                this.for4DigitSelector.selectedIndex = -1;
+                this.for6DigitSelector.selectedIndex = -1;
                 this.yearSelector.value = "";
                 
-                this.selectedCodes = [];
                 this.selected2DigitCodes = [];
+                this.selected4DigitCodes = [];
+                this.selected6DigitCodes = [];
                 this.selectedYear = "";
                 this.currentCIs = [];
                 this.selectedCI = null;
                 
-                this.populateSpecificCodes(this.allSpecificCodes);
+                // Reset dropdowns to show all codes
+                this.populate4DigitCodes(this.allFourDigitCodes);
+                this.populate6DigitCodes(this.allSixDigitCodes);
+                
                 this.updateView();
             }
 
@@ -837,16 +959,25 @@ def main():
     ci_details = generate_essential_ci_details(exploded, df)
     
     print("Preparing FoR codes and years...")
-    specific_codes = [{"value": c, "label": f"{c} — {for_code_to_name.get(c, c)}"} for c in sorted(for_code_to_name.keys())]
-    two_digit_codes = [{"value": c, "label": f"{c} — {for_2digit_to_name.get(c, c)}"} for c in sorted(for_2digit_to_name.keys())]
+    
+    # Separate codes by length
+    digit_2_codes = [c for c in sorted(for_2digit_to_name.keys()) if len(c) == 2]
+    digit_4_codes = [c for c in sorted(for_code_to_name.keys()) if len(c) == 4]
+    digit_6_codes = [c for c in sorted(for_code_to_name.keys()) if len(c) == 6]
+    
+    # Create separate dropdowns for each code type
+    two_digit_codes = [{"value": c, "label": f"{c} — {for_2digit_to_name.get(c, c)}"} for c in digit_2_codes]
+    four_digit_codes = [{"value": c, "label": f"{c} — {for_code_to_name.get(c, c)}"} for c in digit_4_codes]
+    six_digit_codes = [{"value": c, "label": f"{c} — {for_code_to_name.get(c, c)}"} for c in digit_6_codes]
     
     # Get available years
     years = sorted(df["funding_commencement_year"].dropna().unique())
     year_options = [{"value": str(int(year)), "label": f"From {int(year)} onwards"} for year in years]
     
     for_codes_data = {
-        "specific_codes": specific_codes,
         "two_digit_codes": two_digit_codes,
+        "four_digit_codes": four_digit_codes,
+        "six_digit_codes": six_digit_codes,
         "years": year_options
     }
     
@@ -873,7 +1004,7 @@ def main():
     print(f"✅ Optimized static HTML file generated: {output_file}")
     print(f"📊 Rankings generated: {len(rankings)}")
     print(f"👥 CI details generated: {len(ci_details)}")
-    print(f"🏷️  FoR codes: {len(specific_codes)} specific, {len(two_digit_codes)} broad")
+    print(f"🏷️  FoR codes: {len(two_digit_codes)} 2-digit, {len(four_digit_codes)} 4-digit, {len(six_digit_codes)} 6-digit")
     print(f"📁 File size: {len(html_content) / 1024 / 1024:.1f} MB")
     
     return output_file
