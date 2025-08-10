@@ -447,7 +447,7 @@ def create_optimized_html_template():
                     <div class="card-body">
                         <div class="info-badge">
                             <i class="fas fa-info-circle me-1"></i>
-                            Tiered rankings: Top 50 (broad), Top 30 (4-digit), Top 10 (6-digit), 5000 productive CIs
+                            Tiered rankings: Top 50 (broad), Top 30 (4-digit), Top 10 (6-digit), 5000 productive CIs. Records start from 2010.
                         </div>
                         
                         <div class="row">
@@ -692,6 +692,9 @@ def create_optimized_html_template():
                     option.textContent = year.label;
                     this.yearSelector.appendChild(option);
                 });
+                // Set 2010 as default year
+                this.yearSelector.value = "2010";
+                this.selectedYear = "2010";
             }
 
             filter4DigitCodes() {
@@ -880,12 +883,12 @@ def create_optimized_html_template():
                 this.for2DigitSelector.selectedIndex = -1;
                 this.for4DigitSelector.selectedIndex = -1;
                 this.for6DigitSelector.selectedIndex = -1;
-                this.yearSelector.value = "";
+                this.yearSelector.value = "2010";
                 
                 this.selected2DigitCodes = [];
                 this.selected4DigitCodes = [];
                 this.selected6DigitCodes = [];
-                this.selectedYear = "";
+                this.selectedYear = "2010";
                 this.currentCIs = [];
                 this.selectedCI = null;
                 
@@ -925,7 +928,7 @@ def create_optimized_html_template():
         background: white;
     ">
         <div style="max-width: 1400px; margin: 0 auto;">
-            <p style="margin: 0; font-weight: 500;">
+            <p style="margin: 0; font-weight: 500; margin-bottom: 8px;">
                 <i class="fas fa-code" style="color: #3b82f6; margin-right: 8px;"></i>
                 Vibe Code by 
                 <a href="https://ht-timchen.github.io/" 
@@ -941,6 +944,23 @@ def create_optimized_html_template():
                    onmouseout="this.style.color='#3b82f6'">
                     Tim Chen @ Adelaide
                 </a>
+            </p>
+            <p style="margin: 0; font-size: 12px;">
+                <a href="https://github.com/ht-timchen/arc-discovery-analysis" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   style="
+                       color: #6b7280;
+                       text-decoration: none;
+                       transition: color 0.15s ease;
+                   "
+                   onmouseover="this.style.color='#3b82f6'"
+                   onmouseout="this.style.color='#6b7280'">
+                    <i class="fab fa-github" style="margin-right: 4px;"></i>
+                    View Source Code
+                </a>
+                <span style="margin: 0 8px;">•</span>
+                <span style="color: #9ca3af;">Comments welcome</span>
             </p>
         </div>
     </footer>
