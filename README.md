@@ -1,32 +1,41 @@
 # ARC Discovery Projects Analysis
 
-A web application for analyzing Australian Research Council (ARC) Discovery Projects by Chief Investigators and Field of Research codes.
+A modern, minimalist web application for analyzing Australian Research Council (ARC) Discovery Projects by Chief Investigators and Field of Research codes. Built as a single-page static website with embedded data for optimal performance.
 
-## Features
+## ✨ Features
 
-- **Interactive Filtering**: Select specific FoR codes or broad 2-digit categories
-- **Top 30 Ranking**: View the top 30 Chief Investigators by number of projects
+- **Interactive Filtering**: Select specific FoR codes, broad 2-digit categories, or starting years
+- **Comprehensive Rankings**: View top Chief Investigators across all FoR categories
+- **Year-based Analysis**: Filter projects from specific years onwards
 - **Detailed Project View**: Click on any CI to see their specific projects with links to ARC grant pages
-- **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Real-time Updates**: Results update instantly as you change filters
+- **Modern Minimalist Design**: Clean, professional interface with smooth interactions
+- **Single File Deployment**: Complete application in one optimized HTML file
+- **Responsive Design**: Works seamlessly on desktop, tablet, and mobile devices
 
-## Data Source
+## 📊 Data Coverage
 
-The application uses the `arc_discovery_projects_2010_2025_with_for.csv` file containing ARC Discovery Projects data from 2010-2025 with Field of Research classifications.
+- **All FoR Codes**: 2,683 specific codes and 52 broad categories
+- **Top 2,000 CIs**: Comprehensive ranking of leading researchers
+- **15 Projects per CI**: Detailed project information for each investigator
+- **Temporal Analysis**: Projects from 2010-2025 with year-based filtering
 
-## Local Development
+## 🚀 Live Demo
+
+Visit the live application: [https://ht-timchen.github.io/arc-discovery-analysis/](https://ht-timchen.github.io/arc-discovery-analysis/)
+
+## 🛠️ Local Development
 
 ### Prerequisites
 
 - Python 3.8 or higher
-- pip (Python package installer)
+- pandas and numpy libraries
 
 ### Installation
 
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
-cd arc-crawl
+git clone https://github.com/ht-timchen/arc-discovery-analysis.git
+cd arc-discovery-analysis
 ```
 
 2. Install dependencies:
@@ -39,161 +48,126 @@ pip install -r requirements.txt
 arc_discovery_projects_2010_2025_with_for.csv
 ```
 
-4. Run the application:
+4. Generate the static website:
 ```bash
-python app.py
+python static_analysis_optimized.py
 ```
 
-5. Open your browser and navigate to `http://localhost:5000`
-
-## Deployment Options
-
-### Option 1: GitHub Pages (Static Site)
-
-Since this is a Flask application, you'll need to convert it to a static site for GitHub Pages. Here are a few approaches:
-
-#### Using Flask-Freeze (Recommended)
-
-1. Install Flask-Freeze:
+5. Open the generated file in your browser:
 ```bash
-pip install Flask-Freeze
+open arc_analysis_optimized.html
 ```
 
-2. Create a build script (`build.py`):
-```python
-from flask_frozen import Freezer
-from app import app
+## 📁 Project Structure
 
-freezer = Freezer(app)
-
-if __name__ == '__main__':
-    freezer.freeze()
+```
+arc-discovery-analysis/
+├── static_analysis_optimized.py    # Main generation script
+├── arc_analysis_optimized.html     # Generated static website
+├── arc_dp_crawler.py               # Data crawler (optional)
+├── arc_discovery_projects_2010_2025_with_for.csv  # Source data
+├── requirements.txt                # Python dependencies
+├── README.md                      # This file
+└── .github/workflows/             # GitHub Actions deployment
+    └── deploy.yml
 ```
 
-3. Build the static site:
+## 🎯 Key Features Explained
+
+### **FoR Code Filtering**
+- **Broad Categories**: Select 2-digit FoR codes (e.g., "01 Mathematical Sciences")
+- **Specific Codes**: Choose detailed 6-digit codes (e.g., "010101 Pure Mathematics")
+- **Smart Filtering**: Specific codes automatically filter based on broad category selection
+
+### **Year-based Analysis**
+- **Starting Year Filter**: Select projects from any year onwards
+- **Temporal Trends**: Analyze research patterns over time
+- **Combined Filtering**: Use year filters with FoR codes for precise analysis
+
+### **Interactive Rankings**
+- **Real-time Updates**: Rankings update instantly as you change filters
+- **Project Counts**: See how many projects each CI has in selected categories
+- **Detailed Views**: Click "View Projects" to see individual project details
+
+## 🌐 Deployment
+
+### GitHub Pages (Automatic)
+
+The application is automatically deployed to GitHub Pages via GitHub Actions:
+
+1. Push changes to the `main` branch
+2. GitHub Actions builds the static site
+3. Deploys to `https://ht-timchen.github.io/arc-discovery-analysis/`
+
+### Manual Deployment
+
+For other static hosting platforms:
+
+1. Generate the static file:
 ```bash
-python build.py
+python static_analysis_optimized.py
 ```
 
-4. The static files will be in the `build` directory. Copy them to your repository root.
+2. Upload `arc_analysis_optimized.html` to your hosting provider
+3. Rename to `index.html` if needed
 
-5. Enable GitHub Pages in your repository settings and point to the root directory.
+## 🎨 Design Philosophy
 
-#### Using Netlify
+- **Minimalist**: Clean, uncluttered interface focusing on data
+- **Modern**: Contemporary typography and spacing
+- **Accessible**: High contrast and readable fonts
+- **Responsive**: Optimized for all screen sizes
+- **Fast**: Single file with embedded data for instant loading
 
-1. Deploy to Netlify using the Flask-Freeze method above
-2. Upload the `build` directory contents to Netlify
-3. Configure your domain
+## 🔧 Customization
 
-### Option 2: Heroku
+### Modifying Rankings
 
-1. Create a `Procfile`:
-```
-web: gunicorn app:app
-```
+Edit `static_analysis_optimized.py` to change:
+- Number of top CIs displayed
+- Projects per CI shown
+- Ranking criteria
 
-2. Add gunicorn to requirements.txt:
-```
-gunicorn==21.2.0
-```
+### Styling Changes
 
-3. Deploy to Heroku:
-```bash
-heroku create your-app-name
-git push heroku main
-```
-
-### Option 3: Python Anywhere
-
-1. Upload your files to PythonAnywhere
-2. Create a new web app
-3. Point to your `app.py` file
-4. Configure the WSGI file
-
-### Option 4: Railway
-
-1. Connect your GitHub repository to Railway
-2. Railway will automatically detect the Flask app
-3. Deploy with one click
-
-## File Structure
-
-```
-arc-crawl/
-├── app.py                 # Main Flask application
-├── requirements.txt       # Python dependencies
-├── README.md             # This file
-├── arc_discovery_projects_2010_2025_with_for.csv  # Data file
-├── templates/
-│   └── index.html        # Main HTML template
-└── static/
-    ├── css/
-    │   └── style.css     # Custom styles
-    └── js/
-        └── app.js        # Frontend JavaScript
-```
-
-## API Endpoints
-
-- `GET /` - Main page
-- `GET /api/for_codes` - Get available FoR codes
-- `POST /api/ranked_cis` - Get ranked CIs based on selected filters
-- `POST /api/ci_detail/<ci_name>` - Get detailed project information for a CI
-
-## Customization
-
-### Changing the Data Source
-
-Update the `INPUT_CSV` variable in `app.py` to point to your data file.
-
-### Modifying the Top K Results
-
-Change the `TOP_K` variable in `app.py` to show more or fewer results.
-
-### Styling
-
-Modify `static/css/style.css` to customize the appearance.
+The CSS is embedded in the HTML file. Modify the `<style>` section in `static_analysis_optimized.py` to customize:
+- Colors and typography
+- Layout and spacing
+- Interactive effects
 
 ### Adding Features
 
-The modular structure makes it easy to add new features:
-- Add new API endpoints in `app.py`
-- Extend the frontend in `static/js/app.js`
-- Update the UI in `templates/index.html`
+Extend the JavaScript in the HTML template to add:
+- New filter types
+- Additional visualizations
+- Export functionality
 
-## Troubleshooting
+## 📈 Performance
 
-### Data Loading Issues
+- **File Size**: ~4.4MB optimized HTML file
+- **Load Time**: Instant loading with embedded data
+- **No Server**: Completely static, no backend required
+- **Caching**: Browser-friendly for optimal performance
 
-- Ensure the CSV file exists and is readable
-- Check that the CSV has the expected column names
-- Verify the file encoding (should be UTF-8)
-
-### Performance Issues
-
-- The application loads all data into memory on startup
-- For very large datasets, consider implementing pagination
-- Add caching for frequently accessed data
-
-### Deployment Issues
-
-- Make sure all dependencies are in `requirements.txt`
-- Check that the data file is included in your deployment
-- Verify that your hosting platform supports Python/Flask
-
-## Contributing
+## 🤝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Test thoroughly
+4. Test the generated HTML file
 5. Submit a pull request
 
-## License
+## 📄 License
 
 This project is open source and available under the MIT License.
 
-## Support
+## 👨‍💻 Author
+
+**Tim Chen** - Senior Lecturer at the School of Computer Science, University of Adelaide
+
+- Website: [https://ht-timchen.github.io/](https://ht-timchen.github.io/)
+- Research: Human-Computer Interaction, Computer Graphics, and AI/ML
+
+## 🆘 Support
 
 If you encounter any issues or have questions, please open an issue on GitHub.
-# Updated README
