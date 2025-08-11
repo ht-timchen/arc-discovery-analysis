@@ -11,9 +11,20 @@ from pathlib import Path
 def load_and_process_data():
     """Load and process the ARC data"""
     input_csv = "./arc_discovery_projects_2010_2025_with_for.csv"
+    for_codes_file = "./for_codes_flat.json"
     
     if not Path(input_csv).exists():
-        raise FileNotFoundError(f"Input CSV not found: {path}")
+        raise FileNotFoundError(f"Input CSV not found: {input_csv}")
+    
+    if not Path(for_codes_file).exists():
+        raise FileNotFoundError(f"FoR codes file not found: {for_codes_file}")
+    
+    # Load the comprehensive FoR codes from JSON
+    with open(for_codes_file, 'r', encoding='utf-8') as f:
+        for_codes_data = json.load(f)
+    
+    # Extract the codes dictionary from the JSON structure
+    for_code_to_name = for_codes_data['codes']
     
     df = pd.read_csv(input_csv)
     
@@ -34,23 +45,13 @@ def load_and_process_data():
     exploded = exploded[(exploded["ci_name"].notna()) & (exploded["ci_name"].str.len() > 0)]
     exploded = exploded[(exploded["for_code"].notna()) & (exploded["for_code"].str.len() > 0)]
     
-    # Build FoR options with simple labeling from names if available
-    for_code_to_name = {}
-    for code, names in zip(df["for_all_codes"], df["for_all_names"]):
-        if pd.isna(code) or pd.isna(names):
-            continue
-        codes = [c.strip() for c in str(code).split(";") if c.strip()]
-        name_list = [n.strip() for n in str(names).split(";") if n.strip()]
-        for c, n in zip(codes, name_list):
-            for_code_to_name.setdefault(c, n)
-    
-    # Extract 2-digit codes and their names
+    # Extract 2-digit codes and their names from the comprehensive FoR codes
     for_2digit_to_name = {}
     for code, name in for_code_to_name.items():
         if len(code) >= 2:
             two_digit = code[:2]
             if two_digit not in for_2digit_to_name:
-                for_2digit_to_name[two_digit] = name.split(" — ")[0] if " — " in name else name
+                for_2digit_to_name[two_digit] = name
     
     return df, exploded, for_code_to_name, for_2digit_to_name
 
@@ -748,22 +749,34 @@ def create_optimized_html_template():
                 if (this.selected6DigitCodes.length > 0) {
                     // Use the first selected 6-digit code
                     rankingKey = `specific_${this.selected6DigitCodes[0]}`;
-                    if (EMBEDDED_DATA.rankings[rankingKey]) {
+                    if (EMBEDDED_DATA.rankings[rankingKey] && EMBEDDED_DATA.rankings[rankingKey].length > 0) {
                         rankedCIs = EMBEDDED_DATA.rankings[rankingKey];
+                        isOverall = false;
+                    } else {
+                        // No results for this 6-digit code, show empty results
+                        rankedCIs = [];
                         isOverall = false;
                     }
                 } else if (this.selected4DigitCodes.length > 0) {
                     // Use the first selected 4-digit code
                     rankingKey = `4digit_${this.selected4DigitCodes[0]}`;
-                    if (EMBEDDED_DATA.rankings[rankingKey]) {
+                    if (EMBEDDED_DATA.rankings[rankingKey] && EMBEDDED_DATA.rankings[rankingKey].length > 0) {
                         rankedCIs = EMBEDDED_DATA.rankings[rankingKey];
+                        isOverall = false;
+                    } else {
+                        // No results for this 4-digit code, show empty results
+                        rankedCIs = [];
                         isOverall = false;
                     }
                 } else if (this.selected2DigitCodes.length > 0) {
                     // Use the first selected 2-digit code
                     rankingKey = `2digit_${this.selected2DigitCodes[0]}`;
-                    if (EMBEDDED_DATA.rankings[rankingKey]) {
+                    if (EMBEDDED_DATA.rankings[rankingKey] && EMBEDDED_DATA.rankings[rankingKey].length > 0) {
                         rankedCIs = EMBEDDED_DATA.rankings[rankingKey];
+                        isOverall = false;
+                    } else {
+                        // No results for this 2-digit code, show empty results
+                        rankedCIs = [];
                         isOverall = false;
                     }
                 }
@@ -809,9 +822,24 @@ def create_optimized_html_template():
                     return;
                 }
                 
-                this.resultsTitle.textContent = isOverall ? 
-                    'Overall Top Chief Investigators' : 
-                    'Top Chief Investigators (Filtered)';
+                // Hide the no results section since we have results to show
+                this.noResults.classList.add('d-none');
+                
+                // Determine the title based on what's selected
+                let title = 'Overall Top Chief Investigators';
+                if (!isOverall) {
+                    if (this.selected6DigitCodes.length > 0) {
+                        title = `Top Chief Investigators for 6-digit FoR Code: ${this.selected6DigitCodes[0]}`;
+                    } else if (this.selected4DigitCodes.length > 0) {
+                        title = `Top Chief Investigators for 4-digit FoR Code: ${this.selected4DigitCodes[0]}`;
+                    } else if (this.selected2DigitCodes.length > 0) {
+                        title = `Top Chief Investigators for 2-digit FoR Code: ${this.selected2DigitCodes[0]}`;
+                    } else {
+                        title = 'Top Chief Investigators (Filtered)';
+                    }
+                }
+                
+                this.resultsTitle.textContent = title;
                 
                 let html = '';
                 rankedCIs.forEach((ci, index) => {
@@ -903,6 +931,25 @@ def create_optimized_html_template():
                 this.resultsSection.classList.add('d-none');
                 this.ciDetailSection.classList.add('d-none');
                 this.noResults.classList.remove('d-none');
+                
+                // Update the no results message to be more informative
+                let message = 'No Chief Investigators found for the selected criteria.';
+                
+                if (this.selected6DigitCodes.length > 0) {
+                    message = `No Chief Investigators found for the selected 6-digit FoR code: ${this.selected6DigitCodes[0]}`;
+                } else if (this.selected4DigitCodes.length > 0) {
+                    message = `No Chief Investigators found for the selected 4-digit FoR code: ${this.selected4DigitCodes[0]}`;
+                } else if (this.selected2DigitCodes.length > 0) {
+                    message = `No Chief Investigators found for the selected 2-digit FoR code: ${this.selected2DigitCodes[0]}`;
+                }
+                
+                this.noResults.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h4 class="text-muted">${message}</h4>
+                        <p class="text-muted">Try selecting different FoR codes or clearing the filters.</p>
+                    </div>
+                `;
             }
 
             showError(message) {

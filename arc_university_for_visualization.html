@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Discovery Projects - FoR Codes & Universities Stacked Bar Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #2c3e50;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+            font-weight: 400;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+        
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .control-group label {
+            font-weight: 500;
+            color: #495057;
+            font-size: 14px;
+        }
+        
+        .control-group select {
+            padding: 10px 16px;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            font-size: 14px;
+            min-width: 180px;
+            background: #ffffff;
+            color: #495057;
+            transition: border-color 0.2s ease;
+        }
+        
+        .control-group select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 600px;
+            margin: 30px 0;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.1em;
+            color: #6c757d;
+        }
+        
+        .error {
+            text-align: center;
+            padding: 60px;
+            color: #dc3545;
+            font-size: 1.1em;
+        }
+        
+        .navigation {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            padding: 8px;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            z-index: 1000;
+        }
+        
+        .navigation a {
+            display: inline-block;
+            margin: 0 4px;
+            padding: 8px 16px;
+            background: transparent;
+            color: #6c757d;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 400;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+        
+        .navigation a:hover {
+            background: #f8f9fa;
+            color: #495057;
+            border-color: #dee2e6;
+        }
+        
+        .navigation a.active {
+            background: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+        
+
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .controls {
+                flex-direction: column;
+                align-items: center;
+                gap: 16px;
+            }
+            
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ARC Discovery Projects</h1>
+        <div class="subtitle">Universities & Fields of Research (FoR) Codes - Stacked Bar Chart</div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="for-code-2digit">2-digit FoR Code:</label>
+                <select id="for-code-2digit">
+                    <option value="all">All 2-digit FoR Codes</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="max-universities">Max Universities:</label>
+                <select id="max-universities">
+                    <option value="5">Top 5</option>
+                    <option value="8" selected>Top 8</option>
+                    <option value="10">Top 10</option>
+                    <option value="15">Top 15</option>
+                </select>
+            </div>
+        </div>
+        
+
+        
+        <div id="visualization">
+            <div class="loading">Loading visualization...</div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let data = null;
+        let chart = null;
+        let forCodes = null;
+        
+        // Load data and initialize visualization
+        console.log('Starting to load data...');
+        
+        // Load both visualization data and FoR codes
+        const loadData = async () => {
+            try {
+                // Load visualization data
+                const response = await fetch('visualization_data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                const loadedData = await response.json();
+                console.log('Visualization data loaded successfully:', loadedData);
+                
+                // Load FoR codes
+                const forCodesResponse = await fetch('for_codes_flat.json');
+                if (!forCodesResponse.ok) {
+                    throw new Error(`HTTP ${forCodesResponse.status}: ${forCodesResponse.statusText}`);
+                }
+                const loadedForCodesData = await forCodesResponse.json();
+                const loadedForCodes = loadedForCodesData.codes; // Extract codes from the new structure
+                console.log(`FoR codes loaded successfully: ${Object.keys(loadedForCodes).length} total codes`);
+                console.log('Sample 2-digit codes:', Object.keys(loadedForCodes).filter(code => code.length === 2).slice(0, 5));
+                
+                return { data: loadedData, forCodes: loadedForCodes };
+            } catch (error) {
+                console.error('Error loading data:', error);
+                throw error;
+            }
+        };
+        
+        loadData()
+            .then(({ data: loadedData, forCodes: loadedForCodes }) => {
+                data = loadedData;
+                forCodes = loadedForCodes;
+                populateForCodeDropdowns();
+                processDataAndCreateChart();
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                document.getElementById('visualization').innerHTML = 
+                    `<div class="error">Error loading data: ${error.message}<br><br>Please check the browser console for more details.<br><br>Make sure you're running this from a web server (not opening the HTML file directly).</div>`;
+            });
+        
+        function populateForCodeDropdowns() {
+            // Populate 2-digit FoR codes from the comprehensive for_codes_flat.json
+            const dropdown2digit = document.getElementById('for-code-2digit');
+            
+            // Clear existing options except "All 2-digit FoR Codes"
+            while (dropdown2digit.children.length > 1) {
+                dropdown2digit.removeChild(dropdown2digit.lastChild);
+            }
+            
+            // Get all 2-digit codes from for_codes_flat.json
+            const twoDigitCodes = Object.keys(forCodes).filter(code => code.length === 2).sort();
+            
+                            // Add 2-digit FoR code options with names from for_codes_flat.json
+            twoDigitCodes.forEach(code => {
+                const option = document.createElement('option');
+                option.value = code;
+                const forCodeName = forCodes[code] || code;
+                option.textContent = `${code}: ${forCodeName}`;
+                dropdown2digit.appendChild(option);
+            });
+            
+            console.log(`Populated dropdown with ${twoDigitCodes.length} 2-digit FoR codes from for_codes_flat.json`);
+            
+
+            
+            // Show available 4-digit codes for the first 2-digit code as an example
+            if (twoDigitCodes.length > 0) {
+                const firstCode = twoDigitCodes[0];
+                const fourDigitCodesForFirst = Object.keys(forCodes).filter(code => 
+                    code.length === 4 && code.startsWith(firstCode)
+                );
+                console.log(`Available 4-digit codes for ${firstCode}:`, fourDigitCodesForFirst.slice(0, 5));
+            }
+        }
+        
+
+        
+
+        
+        function processDataAndCreateChart() {
+            const maxUniversities = parseInt(document.getElementById('max-universities').value);
+            const selected2digit = document.getElementById('for-code-2digit').value;
+            
+            // Reset color index for consistent colors
+            colorIndex = 0;
+            
+            // Get universities and their grant counts
+            const universityData = [];
+            const universities = data.nodes.filter(node => node.type === 'university');
+            
+            universities.forEach(university => {
+                const universityGrants = {};
+                let totalGrants = 0;
+                
+                if (selected2digit === 'all') {
+                    // Show all 2-digit FoR codes
+                    data.links.forEach(link => {
+                        if (link.source === university.id) {
+                            const forCode = link.target.replace('FOR_', '');
+                            
+                            // Only process 2-digit codes
+                            if (forCode.length === 2) {
+                                universityGrants[forCode] = link.value;
+                                totalGrants += link.value;
+                            }
+                        }
+                    });
+                } else {
+                    // Show 4-digit codes within the selected 2-digit category
+                    data.links.forEach(link => {
+                        if (link.source === university.id && link.target.startsWith('FOR_4DIGIT_')) {
+                            const forCode = link.target.replace('FOR_4DIGIT_', '');
+                            
+                            // Only include 4-digit codes that start with the selected 2-digit code
+                            if (forCode.startsWith(selected2digit)) {
+                                universityGrants[forCode] = link.value;
+                                totalGrants += link.value;
+                            }
+                        }
+                    });
+                }
+                
+                if (totalGrants > 0) {
+                    universityData.push({
+                        university: university.name,
+                        totalGrants: totalGrants,
+                        grants: universityGrants
+                    });
+                }
+            });
+            
+            // Sort by total grants and take top N
+            universityData.sort((a, b) => b.totalGrants - a.totalGrants);
+            universityData.splice(maxUniversities);
+            
+            // Get all unique FoR codes from the filtered data
+            const allForCodes = new Set();
+            universityData.forEach(uni => {
+                Object.keys(uni.grants).forEach(forCode => {
+                    allForCodes.add(forCode);
+                });
+            });
+            
+            // Prepare data for Chart.js
+            const labels = universityData.map(uni => uni.university);
+            const datasets = Array.from(allForCodes).map(forCode => {
+                const data = universityData.map(uni => uni.grants[forCode] || 0);
+                const forCodeName = forCodes[forCode] || forCode;
+                // Include the code in the legend label for better identification
+                const legendLabel = forCode.length === 4 ? `${forCode}: ${forCodeName}` : forCodeName;
+                return {
+                    label: legendLabel,
+                    data: data,
+                    backgroundColor: getNextColor(),
+                    stack: 'Stack 0'
+                };
+            });
+            
+            console.log(`Created chart with ${datasets.length} datasets from ${allForCodes.size} unique FoR codes`);
+            
+            createChart(labels, datasets);
+        }
+        
+        let colorIndex = 0;
+        
+        function getNextColor() {
+            const colors = [
+                '#4E79A7', '#F28E2C', '#E15759', '#76B7B2', '#59A14F',
+                '#EDC949', '#AF7AA1', '#FF9DA7', '#9C755F', '#BAB0AB',
+                '#D37295', '#B07AA1', '#F4A582', '#9E9E9E', '#FFC7CE'
+            ];
+            const color = colors[colorIndex % colors.length];
+            colorIndex++;
+            return color;
+        }
+        
+        function createChart(labels, datasets) {
+            const container = document.getElementById('visualization');
+            container.innerHTML = '<div class="chart-container"><canvas id="chartCanvas"></canvas></div>';
+            
+            const ctx = document.getElementById('chartCanvas').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: (() => {
+                                const selected2digit = document.getElementById('for-code-2digit').value;
+                                if (selected2digit === 'all') {
+                                    return 'ARC Discovery Projects - Universities by 2-digit FoR Codes';
+                                } else {
+                                    const forCodeName = forCodes[selected2digit] || selected2digit;
+                                    return `ARC Discovery Projects - Universities by 4-digit FoR Codes in ${selected2digit}: ${forCodeName}`;
+                                }
+                            })(),
+                            font: {
+                                size: 18,
+                                weight: '500'
+                            },
+                            color: '#1a1a1a',
+                            padding: 20
+                        },
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 13
+                                },
+                                color: '#495057'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#ffffff',
+                            bodyColor: '#ffffff',
+                            borderColor: '#dee2e6',
+                            borderWidth: 1,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.dataset.label + ': ' + context.parsed.y + ' grants';
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Universities',
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                },
+                                color: '#495057'
+                            },
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45,
+                                color: '#6c757d',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#f1f3f4'
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Grants',
+                                font: {
+                                    size: 14,
+                                    weight: '500'
+                                },
+                                color: '#495057'
+                            },
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#6c757d',
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: '#f1f3f4'
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+        
+        function updateControls() {
+            // 2-digit FoR code selection control
+            document.getElementById('for-code-2digit').addEventListener('change', function() {
+                const selectedCode = this.value;
+                if (selectedCode !== 'all') {
+                    // Show available 4-digit codes for the selected 2-digit code
+                    const fourDigitCodes = Object.keys(forCodes).filter(code => 
+                        code.length === 4 && code.startsWith(selectedCode)
+                    );
+                    console.log(`Selected ${selectedCode}: ${forCodes[selectedCode]}`);
+                    console.log(`Available 4-digit codes: ${fourDigitCodes.length} codes`);
+                    console.log('Sample 4-digit codes:', fourDigitCodes.slice(0, 10));
+                }
+                processDataAndCreateChart();
+            });
+            
+            // Max universities control
+            document.getElementById('max-universities').addEventListener('change', function() {
+                processDataAndCreateChart();
+            });
+        }
+        
+        // Initialize controls after DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            updateControls();
+        });
+    </script>
+    
+
+</body>
+</html>

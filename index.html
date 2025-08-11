@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Discovery Projects Analysis Hub</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .hero-section {
+            padding: 60px 0;
+            text-align: center;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #212529;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 0;
+            color: #6c757d;
+            font-weight: 400;
+        }
+        
+        .card-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 60px 20px;
+        }
+        
+        .analysis-card {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 20px;
+            transition: all 0.2s ease;
+        }
+        
+        .analysis-card:hover {
+            border-color: #007bff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #007bff;
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #212529;
+        }
+        
+        .card-description {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        .btn-explore {
+            background: #007bff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            color: white;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-explore:hover {
+            background: #0056b3;
+            color: white;
+            text-decoration: none;
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 30px 0;
+            color: #6c757d;
+            font-size: 0.85rem;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+        
+        .footer a:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .analysis-card {
+                padding: 25px 20px;
+            }
+            
+            .card-title {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">
+                <i class="fas fa-chart-line me-3"></i>
+                ARC Discovery Projects
+            </h1>
+            <p class="hero-subtitle">
+                Comprehensive analysis and visualization tools for Australian Research Council Discovery Projects data
+            </p>
+        </div>
+    </div>
+
+    <div class="card-container">
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="analysis-card">
+                    <div class="text-center">
+                        <div class="card-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h2 class="card-title">Universities & FoR Codes</h2>
+                        <p class="card-description">
+                            Interactive stacked bar chart visualization showing the distribution of universities across 
+                            Fields of Research (FoR) codes. Explore research patterns and institutional strengths 
+                            in different academic disciplines.
+                        </p>
+                        <a href="arc_university_for_visualization.html" class="btn-explore">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            Explore Visualization
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <div class="analysis-card">
+                    <div class="text-center">
+                        <div class="card-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h2 class="card-title">Chief Investigators Analysis</h2>
+                        <p class="card-description">
+                            Comprehensive analysis of Chief Investigators, including rankings, project details, 
+                            and research patterns. Filter by FoR codes and years to discover leading researchers 
+                            and their contributions.
+                        </p>
+                        <a href="arc_analysis_optimized.html" class="btn-explore">
+                            <i class="fas fa-search me-2"></i>
+                            View Analysis
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>
+                <i class="fas fa-code me-2"></i>
+                Powered by 
+                <a href="https://ht-timchen.github.io/" target="_blank" rel="noopener noreferrer">
+                    Tim Chen @ Adelaide
+                </a>
+                <span class="mx-2">•</span>
+                <a href="https://github.com/ht-timchen/arc-discovery-analysis" target="_blank" rel="noopener noreferrer">
+                    <i class="fab fa-github me-1"></i>
+                    View Source Code
+                </a>
+            </p>
+            <p class="mt-2">
+                <small>Data sourced from Australian Research Council Discovery Projects (2010-2025)</small>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
