@@ -381,13 +381,6 @@
             console.log(`Created chart with ${datasets.length} datasets from ${allForCodes.size} unique FoR codes`);
             
             createChart(labels, datasets);
-            
-            // Force chart update to ensure y-axis is properly recalculated
-            if (chart) {
-                setTimeout(() => {
-                    chart.update('none'); // Update without animation for immediate effect
-                }, 100);
-            }
         }
         
         let colorIndex = 0;
@@ -426,13 +419,6 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    // Mobile-responsive options
-                    devicePixelRatio: window.devicePixelRatio || 1,
-                    // Ensure proper chart updates on mobile
-                    animation: {
-                        duration: 300,
-                        easing: 'easeInOutQuart'
-                    },
                     plugins: {
                         title: {
                             display: true,
@@ -523,20 +509,10 @@
                                 color: '#6c757d',
                                 font: {
                                     size: 12
-                                },
-                                // Ensure y-axis ticks are properly spaced on mobile
-                                maxTicksLimit: 10,
-                                stepSize: 'auto'
+                                }
                             },
                             grid: {
                                 color: '#f1f3f4'
-                            },
-                            // Mobile-responsive y-axis configuration
-                            afterFit: function(axis) {
-                                // Ensure y-axis has proper width on mobile
-                                if (window.innerWidth <= 768) {
-                                    axis.width = Math.max(axis.width, 50);
-                                }
                             }
                         }
                     },
@@ -578,26 +554,6 @@
         // Initialize controls after DOM is loaded
         document.addEventListener('DOMContentLoaded', function() {
             updateControls();
-        });
-        
-        // Handle mobile orientation changes and window resize
-        window.addEventListener('resize', function() {
-            if (chart) {
-                // Force chart resize and y-axis recalculation
-                chart.resize();
-                chart.update('none');
-            }
-        });
-        
-        // Handle mobile orientation change specifically
-        window.addEventListener('orientationchange', function() {
-            if (chart) {
-                // Wait for orientation change to complete, then update chart
-                setTimeout(() => {
-                    chart.resize();
-                    chart.update('none');
-                }, 500);
-            }
         });
     </script>
     
