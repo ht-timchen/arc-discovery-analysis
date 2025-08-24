@@ -175,9 +175,9 @@
         
         <div class="controls">
             <div class="control-group">
-                <label for="for-code-2digit">2-digit FoR Code:</label>
+                <label for="for-code-2digit">Analysis Type:</label>
                 <select id="for-code-2digit">
-                    <option value="all">All 2-digit FoR Codes</option>
+                    <option value="overall" selected>Overall Fellowships</option>
                 </select>
             </div>
             <div class="control-group">
@@ -250,7 +250,7 @@
             // Populate 2-digit FoR codes from the comprehensive for_codes_flat.json
             const dropdown2digit = document.getElementById('for-code-2digit');
             
-            // Clear existing options except "All 2-digit FoR Codes"
+            // Clear existing options except "Overall Fellowships"
             while (dropdown2digit.children.length > 1) {
                 dropdown2digit.removeChild(dropdown2digit.lastChild);
             }
@@ -294,19 +294,15 @@
                 const universityFellowships = {};
                 let totalFellowships = 0;
                 
-                if (selected2digit === 'all') {
-                    // Show all 2-digit FoR codes
+                if (selected2digit === 'overall') {
+                    // Show overall fellowship count for each university
                     data.links.forEach(link => {
                         if (link.source === university.id) {
-                            const forCode = link.target.replace('FOR_', '');
-                            
-                            // Only process 2-digit codes
-                            if (forCode.length === 2) {
-                                universityFellowships[forCode] = link.value;
-                                totalFellowships += link.value;
-                            }
+                            totalFellowships += link.value;
                         }
                     });
+                    // Store total in a special key for overall view
+                    universityFellowships['overall'] = totalFellowships;
                 } else {
                     // Show 4-digit codes within the selected 2-digit category
                     data.links.forEach(link => {
@@ -387,6 +383,9 @@
                 chart.destroy();
             }
             
+            const selected2digit = document.getElementById('for-code-2digit').value;
+            const isOverall = selected2digit === 'overall';
+            
             chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -400,9 +399,8 @@
                         title: {
                             display: true,
                             text: (() => {
-                                const selected2digit = document.getElementById('for-code-2digit').value;
-                                if (selected2digit === 'all') {
-                                    return 'ARC Fellowships - Universities by 2-digit FoR Codes';
+                                if (selected2digit === 'overall') {
+                                    return 'ARC Fellowships - Universities by Total Fellowship Count';
                                 } else {
                                     const forCodeName = forCodes[selected2digit] || selected2digit;
                                     return `ARC Fellowships - Universities by 4-digit FoR Codes in ${selected2digit}: ${forCodeName}`;
@@ -436,14 +434,18 @@
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y + ' fellowships';
+                                    if (isOverall) {
+                                        return 'Total Fellowships: ' + context.parsed.y;
+                                    } else {
+                                        return context.dataset.label + ': ' + context.parsed.y + ' fellowships';
+                                    }
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            stacked: true,
+                            stacked: !isOverall,
                             title: {
                                 display: true,
                                 text: 'Universities',
@@ -466,7 +468,7 @@
                             }
                         },
                         y: {
-                            stacked: true,
+                            stacked: !isOverall,
                             title: {
                                 display: true,
                                 text: 'Number of Fellowships',
@@ -498,17 +500,19 @@
         }
         
         function updateControls() {
-            // 2-digit FoR code selection control
+            // Analysis type selection control
             document.getElementById('for-code-2digit').addEventListener('change', function() {
                 const selectedCode = this.value;
-                if (selectedCode !== 'all') {
+                if (selectedCode === 'overall') {
+                    console.log('Selected: Overall Fellowships - showing total counts per university');
+                } else {
                     // Show available 4-digit codes for the selected 2-digit code
                     const fourDigitCodes = Object.keys(forCodes).filter(code => 
                         code.length === 4 && code.startsWith(selectedCode)
                     );
                     console.log(`Selected ${selectedCode}: ${forCodes[selectedCode]}`);
                     console.log(`Available 4-digit codes: ${fourDigitCodes.length} codes`);
-                    console.log('Sample 4-digit codes:', fourDigitCodes.slice(0, 10));
+                    console.log('Sample 4-digit codes:', fourDigitCodes.slice(0, 5));
                 }
                 processDataAndCreateChart();
             });

@@ -177,8 +177,9 @@
         
         <div class="controls">
             <div class="control-group">
-                <label for="for-code-2digit">2-digit FoR Code:</label>
+                <label for="for-code-2digit">Analysis Type:</label>
                 <select id="for-code-2digit">
+                    <option value="overall" selected>Overall Discovery Projects</option>
                     <option value="all">All 2-digit FoR Codes</option>
                 </select>
             </div>
@@ -254,8 +255,8 @@
             // Populate 2-digit FoR codes from the comprehensive for_codes_flat.json
             const dropdown2digit = document.getElementById('for-code-2digit');
             
-            // Clear existing options except "All 2-digit FoR Codes"
-            while (dropdown2digit.children.length > 1) {
+            // Clear existing options except "Overall Discovery Projects" and "All 2-digit FoR Codes"
+            while (dropdown2digit.children.length > 2) {
                 dropdown2digit.removeChild(dropdown2digit.lastChild);
             }
             
@@ -304,7 +305,16 @@
                 const universityGrants = {};
                 let totalGrants = 0;
                 
-                if (selected2digit === 'all') {
+                if (selected2digit === 'overall') {
+                    // Show overall Discovery Project count for each university
+                    data.links.forEach(link => {
+                        if (link.source === university.id) {
+                            totalGrants += link.value;
+                        }
+                    });
+                    // Store total in a special key for overall view
+                    universityGrants['overall'] = totalGrants;
+                } else if (selected2digit === 'all') {
                     // Show all 2-digit FoR codes
                     data.links.forEach(link => {
                         if (link.source === university.id) {
@@ -397,6 +407,9 @@
                 chart.destroy();
             }
             
+            const selected2digit = document.getElementById('for-code-2digit').value;
+            const isOverall = selected2digit === 'overall';
+            
             chart = new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -410,8 +423,9 @@
                         title: {
                             display: true,
                             text: (() => {
-                                const selected2digit = document.getElementById('for-code-2digit').value;
-                                if (selected2digit === 'all') {
+                                if (selected2digit === 'overall') {
+                                    return 'ARC Discovery Projects - Universities by Total Project Count';
+                                } else if (selected2digit === 'all') {
                                     return 'ARC Discovery Projects - Universities by 2-digit FoR Codes';
                                 } else {
                                     const forCodeName = forCodes[selected2digit] || selected2digit;
@@ -446,14 +460,18 @@
                             borderWidth: 1,
                             callbacks: {
                                 label: function(context) {
-                                    return context.dataset.label + ': ' + context.parsed.y + ' grants';
+                                    if (isOverall) {
+                                        return 'Total Discovery Projects: ' + context.parsed.y;
+                                    } else {
+                                        return context.dataset.label + ': ' + context.parsed.y + ' grants';
+                                    }
                                 }
                             }
                         }
                     },
                     scales: {
                         x: {
-                            stacked: true,
+                            stacked: !isOverall,
                             title: {
                                 display: true,
                                 text: 'Universities',
@@ -476,10 +494,10 @@
                             }
                         },
                         y: {
-                            stacked: true,
+                            stacked: !isOverall,
                             title: {
                                 display: true,
-                                text: 'Number of Grants',
+                                text: 'Number of Discovery Projects',
                                 font: {
                                     size: 14,
                                     weight: '500'
@@ -508,10 +526,14 @@
         }
         
         function updateControls() {
-            // 2-digit FoR code selection control
+            // Analysis type selection control
             document.getElementById('for-code-2digit').addEventListener('change', function() {
                 const selectedCode = this.value;
-                if (selectedCode !== 'all') {
+                if (selectedCode === 'overall') {
+                    console.log('Selected: Overall Discovery Projects - showing total counts per university');
+                } else if (selectedCode === 'all') {
+                    console.log('Selected: All 2-digit FoR Codes - showing breakdown by research areas');
+                } else {
                     // Show available 4-digit codes for the selected 2-digit code
                     const fourDigitCodes = Object.keys(forCodes).filter(code => 
                         code.length === 4 && code.startsWith(selectedCode)
