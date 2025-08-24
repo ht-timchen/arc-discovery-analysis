@@ -3,3 +3,5 @@ pandas>=2.0.0
 numpy>=1.24.0
 Werkzeug>=2.3.0
 Frozen-Flask>=0.18
+openai>=1.0.0
+anthropic>=0.7.0

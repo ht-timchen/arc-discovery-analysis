@@ -1,26 +1,48 @@
-# ARC Discovery Projects Analysis
+# ARC Research Hub
 
-A comprehensive analysis of Australian Research Council (ARC) Discovery Projects from 2010-2025, featuring interactive rankings of Chief Investigators by Field of Research (FoR) codes.
+A comprehensive analysis hub for Australian Research Council (ARC) research data, featuring interactive visualizations and rankings for Discovery Projects and Fellowship schemes from 2010-2025.
 
 ## 🌐 Live Demo
 
 **[View the live application](https://ht-timchen.github.io/arc-discovery-analysis/)**
 
-## ✨ Features
+**Start here: [index.html](index.html)**
 
-- **📊 Interactive Rankings**: Top Chief Investigators by project count
-- **🎯 Hierarchical Filtering**: 2-digit, 4-digit, and 6-digit FoR code selection
-- **🔗 Linked Dropdowns**: Smart filtering that shows related codes
-- **📅 Year Filtering**: Filter projects from specific years onwards
-- **👥 Detailed Profiles**: View individual Chief Investigator projects
-- **📱 Responsive Design**: Works on desktop and mobile devices
+## ✨ Analysis Cards
+
+### 🏛️ Discovery Projects Analysis
+- **Interactive stacked bar chart** showing university distribution across Fields of Research (FoR) codes
+- **Research patterns** and institutional strengths across academic disciplines
+- **Data coverage**: 2010-2025 Discovery Projects with comprehensive FoR code mapping
+
+### 🏆 Fellowship Analysis  
+- **Interactive visualization** of ARC Fellowship schemes (DECRA, Future Fellowships, Laureate Fellowships)
+- **University distribution** across research areas and fellowship types
+- **Data coverage**: 2010-2025 Fellowship data with 5,148 fellowships across 53 universities
+
+### 👥 Chief Investigators Ranking
+- **Comprehensive rankings** and performance metrics of Chief Investigators
+- **Project details** and research patterns with hierarchical FoR code filtering
+- **Data coverage**: Top 5,000 Chief Investigators with detailed project information
+
+### ⚧ Gender Analysis (Experimental)
+- **Experimental analysis** of gender distribution among Chief Investigators
+- **Three-tier methodology** with web search, AI analysis, and manual review
+- **Data coverage**: Chief Investigators with 3+ Discovery Projects
 
 ## 📈 Data Coverage
 
+### Discovery Projects (2010-2025)
 - **2,735 FoR codes** across all research disciplines
 - **Top 5,000 Chief Investigators** with detailed project information
 - **Tiered rankings**: Top 50 (broad), Top 30 (4-digit), Top 10 (6-digit)
-- **2010-2025** project data with year-based filtering
+- **Year-based filtering** for focused analysis
+
+### Fellowship Schemes (2010-2025)
+- **5,148 fellowships** across all ARC fellowship types
+- **53 universities** with comprehensive coverage
+- **290 FoR codes** mapped to fellowship activities
+- **DECRA, Future Fellowships, and Laureate Fellowships** included
 
 ## 🎯 How to Use
 
@@ -32,16 +54,19 @@ A comprehensive analysis of Australian Research Council (ARC) Discovery Projects
 
 ## 🏗️ Architecture
 
-- **Static Site**: Single HTML file with embedded data
-- **Client-side Processing**: All filtering and ranking done in browser
+- **Hub Structure**: Central index.html with navigation to four specialized analysis tools
+- **Static Sites**: Each analysis tool is a self-contained HTML file with embedded data
+- **Client-side Processing**: All filtering, ranking, and visualization done in browser
 - **No Backend**: Fully self-contained for easy deployment
 - **GitHub Pages**: Hosted on GitHub's static hosting service
 
 ## 📊 Data Sources
 
-- **ARC Discovery Projects**: Official Australian Research Council data
-- **Field of Research Codes**: Australian and New Zealand Standard Research Classification
-- **Project Years**: 2010-2025 funding commencement dates
+- **ARC Discovery Projects**: Official Australian Research Council data (2010-2025)
+- **ARC Fellowship Schemes**: DECRA, Future Fellowships, and Laureate Fellowships data (2010-2025)
+- **Field of Research Codes**: Australian and New Zealand Standard Research Classification (ANZSRC)
+- **University Data**: Administering organization information from ARC grants database
+- **Gender Analysis**: Experimental data with web search, AI analysis, and manual review methodology
 
 ## 👨‍💻 Author
 
