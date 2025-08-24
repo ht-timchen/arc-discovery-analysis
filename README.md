@@ -6,8 +6,6 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 
 **[View the live application](https://ht-timchen.github.io/arc-discovery-analysis/)**
 
-**Start here: [index.html](index.html)**
-
 ## ✨ Analysis Cards
 
 ### 🏛️ Discovery Projects Analysis
