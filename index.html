@@ -151,6 +151,12 @@
             <p class="hero-subtitle">
                 Comprehensive analysis and visualization tools for Australian Research Council Discovery Projects and Fellowship data
             </p>
+            <div class="desktop-notice mt-3" id="desktop-notice" style="display: none;">
+                <div class="alert alert-info" role="alert" style="max-width: 600px; margin: 0 auto; border-radius: 8px;">
+                    <i class="fas fa-desktop me-2"></i>
+                    <strong>Desktop Recommended:</strong> For the best experience with interactive visualizations, we recommend using a desktop or laptop computer.
+                </div>
+            </div>
         </div>
     </div>
 
@@ -258,5 +264,21 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Function to detect mobile devices
+        function isMobileDevice() {
+            return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+                   (window.innerWidth <= 768 && window.innerHeight <= 1024);
+        }
+        
+        // Show desktop notice only for mobile devices
+        document.addEventListener('DOMContentLoaded', function() {
+            const desktopNotice = document.getElementById('desktop-notice');
+            if (isMobileDevice() && desktopNotice) {
+                desktopNotice.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
