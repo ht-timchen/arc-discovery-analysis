@@ -1,0 +1,58 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+      pages: write
+      id-token: write
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pandas>=2.0.0
+        pip install numpy>=1.24.0
+        
+    - name: Build optimized static site
+      run: |
+        python static_analysis_optimized.py
+        cp arc_analysis_optimized.html index.html
+        touch .nojekyll
+        echo "Generated HTML file:"
+        ls -la index.html
+        echo "File size:"
+        du -h index.html
+        
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./
+        publish_branch: gh-pages
+        force_orphan: true
+        destination_dir: ./
+        exclude_assets: |
+          static_analysis_optimized.py
+          arc_dp_crawler.py
+          arc_discovery_projects_2010_2025_with_for.csv
+          README.md
+          requirements.txt
+          .gitignore
