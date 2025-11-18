@@ -10,7 +10,7 @@ def extract_cis_and_affiliations():
     ci_data = []
     ci_affiliations = defaultdict(set)
     
-    with open('arc_discovery_projects_2010_2025_with_for.csv', 'r', encoding='utf-8') as file:
+    with open('arc_discovery_projects_2010_2026_with_for.csv', 'r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         
         for row in reader:

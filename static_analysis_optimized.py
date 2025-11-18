@@ -10,7 +10,8 @@ from pathlib import Path
 
 def load_and_process_data():
     """Load and process the ARC data"""
-    input_csv = "./arc_discovery_projects_2010_2025_with_for.csv"
+    input_csv = "./arc_discovery_projects_2010_2026_with_for.csv"
+    input_json = "./arc_discovery_projects_2010_2026_with_for.json"
     for_codes_file = "./for_codes_flat.json"
     
     if not Path(input_csv).exists():
@@ -27,6 +28,24 @@ def load_and_process_data():
     for_code_to_name = for_codes_data['codes']
     
     df = pd.read_csv(input_csv)
+    
+    # Load JSON data to get administering_organisation_announcement as fallback
+    org_announcement_map = {}
+    if Path(input_json).exists():
+        try:
+            with open(input_json, 'r', encoding='utf-8') as f:
+                json_data = json.load(f)
+                for record in json_data:
+                    code = record.get("code")
+                    if code:
+                        org_announcement_map[code] = record.get("administering_organisation_announcement")
+        except Exception as e:
+            print(f"Warning: Could not load JSON for org announcement fallback: {e}")
+    
+    # Fill in missing administering_organisation from announcement field
+    if org_announcement_map:
+        mask = df["administering_organisation"].isna() | (df["administering_organisation"] == "")
+        df.loc[mask, "administering_organisation"] = df.loc[mask, "code"].map(org_announcement_map).fillna(df.loc[mask, "administering_organisation"])
     
     # Utility to split semicolon-separated values
     def split_list(col):

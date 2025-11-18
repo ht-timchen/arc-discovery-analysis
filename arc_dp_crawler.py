@@ -139,6 +139,42 @@ def is_funded(attributes: Dict[str, Any]) -> bool:
     return False
 
 
+def load_existing_csv(csv_path: str) -> Dict[str, Dict[str, Any]]:
+    """Load existing CSV file and return a dict mapping grant codes to rows"""
+    existing = {}
+    try:
+        with open(csv_path, "r", newline="", encoding="utf-8") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                code = row.get("code")
+                if code:
+                    existing[code] = row
+        print(f"Loaded {len(existing)} existing records from {csv_path}", file=sys.stderr)
+    except FileNotFoundError:
+        print(f"Existing CSV file not found: {csv_path}", file=sys.stderr)
+    except Exception as e:
+        print(f"Error loading existing CSV: {e}", file=sys.stderr)
+    return existing
+
+
+def load_existing_json(json_path: str) -> Dict[str, Dict[str, Any]]:
+    """Load existing JSON file and return a dict mapping grant codes to records"""
+    existing = {}
+    try:
+        with open(json_path, "r", encoding="utf-8") as f:
+            records = json.load(f)
+            for rec in records:
+                code = rec.get("code")
+                if code:
+                    existing[code] = rec
+        print(f"Loaded {len(existing)} existing records from {json_path}", file=sys.stderr)
+    except FileNotFoundError:
+        print(f"Existing JSON file not found: {json_path}", file=sys.stderr)
+    except Exception as e:
+        print(f"Error loading existing JSON: {e}", file=sys.stderr)
+    return existing
+
+
 def main():
     import argparse
 
@@ -150,8 +186,28 @@ def main():
     parser.add_argument("--sleep", type=float, default=0.1, help="Sleep seconds between detail requests to be polite")
     parser.add_argument("--year-from", type=int, default=None, help="Only include grants with funding-commencement-year >= this year")
     parser.add_argument("--year-to", type=int, default=None, help="Only include grants with funding-commencement-year <= this year")
+    parser.add_argument("--append", action="store_true", help="Append mode: merge with existing data, skipping duplicates")
+    parser.add_argument("--existing-csv", type=str, help="Path to existing CSV file for append mode")
+    parser.add_argument("--existing-json", type=str, help="Path to existing JSON file for append mode")
 
     args = parser.parse_args()
+    
+    # If append mode, load existing data
+    existing_csv_data = {}
+    existing_json_data = {}
+    if args.append:
+        csv_path = args.existing_csv or "arc_discovery_projects_2010_2025_with_for.csv"
+        # Try to find corresponding JSON file if not specified
+        json_path = args.existing_json
+        if not json_path and csv_path:
+            # Try to infer JSON path from CSV path
+            json_path = csv_path.replace(".csv", ".json")
+            import os
+            if not os.path.exists(json_path):
+                json_path = None
+        existing_csv_data = load_existing_csv(csv_path)
+        if json_path:
+            existing_json_data = load_existing_json(json_path)
 
     session = make_session()
 
@@ -203,16 +259,41 @@ def main():
             print(f"Error fetching {gid}: {e}", file=sys.stderr)
             continue
 
-    # Write JSON
-    json_serializable = [
-        {
-            **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
-            "investigators_current": [asdict(inv) for inv in rec.investigators_current],
-            "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
-            "chief_investigators": [asdict(inv) for inv in rec.chief_investigators()],
-        }
-        for rec in results
-    ]
+    # If append mode, merge with existing data (skip duplicates by grant code)
+    if args.append:
+        new_codes = {rec.code for rec in results}
+        
+        # Merge existing JSON records (skip duplicates)
+        merged_json = []
+        for code, existing_rec in existing_json_data.items():
+            if code not in new_codes:
+                merged_json.append(existing_rec)
+        
+        # Add new records
+        for rec in results:
+            merged_json.append({
+                **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
+                "investigators_current": [asdict(inv) for inv in rec.investigators_current],
+                "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
+                "chief_investigators": [asdict(inv) for inv in rec.chief_investigators()],
+            })
+        
+        json_serializable = merged_json
+        skipped_count = len([c for c in existing_json_data.keys() if c in new_codes])
+        if skipped_count > 0:
+            print(f"Skipped {skipped_count} duplicate JSON records (already exist)", file=sys.stderr)
+    else:
+        # Write JSON
+        json_serializable = [
+            {
+                **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
+                "investigators_current": [asdict(inv) for inv in rec.investigators_current],
+                "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
+                "chief_investigators": [asdict(inv) for inv in rec.chief_investigators()],
+            }
+            for rec in results
+        ]
+    
     with open(args.out_json, "w", encoding="utf-8") as f:
         json.dump(json_serializable, f, ensure_ascii=False, indent=2)
     
@@ -233,9 +314,26 @@ def main():
         "chief_investigators",
         "chief_investigators_orcids",
     ]
+    
+    # If append mode, merge with existing CSV data (skip duplicates by grant code)
+    records_to_write = []
+    if args.append:
+        new_codes = {rec.code for rec in results}
+        # Add existing CSV records that are not in new data
+        for code, existing_row in existing_csv_data.items():
+            if code not in new_codes:
+                records_to_write.append(existing_row)
+        skipped_csv_count = len([c for c in existing_csv_data.keys() if c in new_codes])
+        if skipped_csv_count > 0:
+            print(f"Skipped {skipped_csv_count} duplicate CSV records (already exist)", file=sys.stderr)
+    
     with open(args.out_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
+        # Write existing records first (if append mode)
+        for row in records_to_write:
+            writer.writerow(row)
+        # Write new records
         for rec in results:
             # Flatten Field of Research
             for_list = rec.field_of_research
