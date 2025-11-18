@@ -92,6 +92,46 @@
             margin: 30px 0;
         }
         
+        .chart-wrapper {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+        
+        .chart-main {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .legend-sidebar {
+            flex-shrink: 0;
+            max-width: 300px;
+            max-height: 600px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .legend-sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .legend-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+        
+        .legend-sidebar::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        
+        .legend-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
         .loading {
             text-align: center;
             padding: 60px;
@@ -167,6 +207,15 @@
             .chart-container {
                 height: 400px;
             }
+            
+            .chart-wrapper {
+                flex-direction: column;
+            }
+            
+            .legend-sidebar {
+                max-width: 100%;
+                max-height: 200px;
+            }
         }
     </style>
 </head>
@@ -192,6 +241,12 @@
                     <option value="15">Top 15</option>
                 </select>
             </div>
+            <div class="control-group">
+                <label for="year-filter">Year Filter:</label>
+                <select id="year-filter">
+                    <option value="" selected>All Years</option>
+                </select>
+            </div>
         </div>
         
 
@@ -206,13 +261,335 @@
         let data = null;
         let chart = null;
         let forCodes = null;
+        let csvData = null; // Store CSV data for year filtering
+        let projectYearMap = {}; // Map project code to year
+        let csvProjectData = []; // Store full CSV project data
         
         // Load data and initialize visualization
         console.log('Starting to load data...');
         
+        // Improved CSV parser handling quoted fields properly
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = i < line.length - 1 ? line[i + 1] : null;
+                
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') {
+                        // Escaped quote
+                        current += '"';
+                        i++; // Skip next quote
+                    } else {
+                        // Toggle quote state
+                        inQuotes = !inQuotes;
+                    }
+                } else if (char === ',' && !inQuotes) {
+                    // Field separator
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current); // Add last field
+            return result;
+        }
+        
+        // Load CSV data for year filtering
+        const loadCSVData = async () => {
+            try {
+                const csvResponse = await fetch('arc_discovery_projects_2010_2026_with_for.csv');
+                if (!csvResponse.ok) {
+                    throw new Error(`HTTP ${csvResponse.status}: ${csvResponse.statusText}`);
+                }
+                const csvText = await csvResponse.text();
+                const lines = csvText.split('\n').filter(line => line.trim());
+                const headers = parseCSVLine(lines[0]);
+                
+                // Find indices for required columns
+                const codeIndex = headers.indexOf('code');
+                const yearIndex = headers.indexOf('funding_commencement_year');
+                const orgIndex = headers.indexOf('administering_organisation');
+                const forAllCodesIndex = headers.indexOf('for_all_codes');
+                const forPrimaryCodesIndex = headers.indexOf('for_primary_codes');
+                
+                if (codeIndex === -1 || yearIndex === -1 || orgIndex === -1 || forAllCodesIndex === -1) {
+                    throw new Error('Required columns not found in CSV');
+                }
+                
+                // Parse CSV and build project data
+                const years = new Set();
+                let parsedCount = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const values = parseCSVLine(lines[i]);
+                    
+                    // Ensure we have enough columns
+                    const maxIndex = Math.max(codeIndex, yearIndex, orgIndex, forAllCodesIndex, forPrimaryCodesIndex !== -1 ? forPrimaryCodesIndex : 0);
+                    if (values.length <= maxIndex) {
+                        console.warn(`Skipping line ${i + 1}: insufficient columns (${values.length})`);
+                        continue;
+                    }
+                    
+                    const code = values[codeIndex] ? values[codeIndex].trim().replace(/^"|"$/g, '') : '';
+                    const year = values[yearIndex] ? values[yearIndex].trim().replace(/^"|"$/g, '') : '';
+                    const org = values[orgIndex] ? values[orgIndex].trim().replace(/^"|"$/g, '') : '';
+                    const forAllCodes = values[forAllCodesIndex] ? values[forAllCodesIndex].trim().replace(/^"|"$/g, '') : '';
+                    const forPrimaryCodes = forPrimaryCodesIndex !== -1 && values[forPrimaryCodesIndex] ? 
+                        values[forPrimaryCodesIndex].trim().replace(/^"|"$/g, '') : '';
+                    
+                    if (code && year && !isNaN(parseInt(year))) {
+                        const yearNum = parseInt(year);
+                        projectYearMap[code] = yearNum;
+                        years.add(yearNum);
+                        
+                        // Store project data for rebuilding links
+                        // Use primary FoR codes if available, otherwise fall back to all codes
+                        const primaryCodesList = forPrimaryCodes ? 
+                            forPrimaryCodes.split(';').map(c => c.trim()).filter(c => c) : 
+                            (forAllCodes ? forAllCodes.split(';').map(c => c.trim()).filter(c => c) : []);
+                        
+                        csvProjectData.push({
+                            code: code,
+                            year: yearNum,
+                            university: org || '',
+                            forCodes: primaryCodesList, // Use primary codes
+                            forAllCodes: forAllCodes ? forAllCodes.split(';').map(c => c.trim()).filter(c => c) : [] // Keep all codes for reference
+                        });
+                        parsedCount++;
+                    }
+                }
+                
+                console.log(`Loaded ${parsedCount} projects with full data (expected ~11059)`);
+                console.log(`Available years: ${Array.from(years).sort().join(', ')}`);
+                
+                // Verify counts
+                if (parsedCount < 10000) {
+                    console.warn(`Warning: Only parsed ${parsedCount} projects, expected more. CSV parsing may have issues.`);
+                }
+                
+                return Array.from(years).sort();
+            } catch (error) {
+                console.error('Error loading CSV data:', error);
+                // Don't throw - year filtering will just be disabled
+                return [];
+            }
+        };
+        
+        // Rebuild links from CSV data filtered by year
+        function rebuildLinksFromCSV(minYear) {
+            const links = [];
+            const universityForCounts = {}; // university -> forCode -> Set of project codes
+            const universityProjectCounts = {}; // university -> Set of project codes (for overall count)
+            const universityProjectByForCode = {}; // university -> Set of project codes that have 4-digit codes
+            
+            // Filter projects by year
+            const filteredProjects = csvProjectData.filter(project => {
+                return !minYear || project.year >= minYear;
+            });
+            
+            console.log(`Filtered ${filteredProjects.length} projects with year >= ${minYear || 'all'}`);
+            // Debug: Log sample of filtered project data
+            if (filteredProjects.length > 0) {
+                console.log(`Sample filtered projects (first 3):`, filteredProjects.slice(0, 3).map(p => ({
+                    code: p.code,
+                    university: p.university,
+                    year: p.year,
+                    forCodes: p.forCodes
+                })));
+            }
+            
+            // Build aggregation - use Sets to count unique projects per FoR code
+            // Each project is counted only once using the first 4-digit FoR code in the list
+            filteredProjects.forEach(project => {
+                if (!project.university || !project.code) return;
+                
+                // Normalize university name for consistent matching
+                const normalizedUni = project.university.trim().toLowerCase();
+                
+                if (!universityForCounts[normalizedUni]) {
+                    universityForCounts[normalizedUni] = {};
+                }
+                if (!universityProjectCounts[normalizedUni]) {
+                    universityProjectCounts[normalizedUni] = new Set();
+                }
+                if (!universityProjectByForCode[normalizedUni]) {
+                    universityProjectByForCode[normalizedUni] = new Set();
+                }
+                
+                // Track unique project for overall count
+                universityProjectCounts[normalizedUni].add(project.code);
+                
+                // Use the primary FoR code (first code in forCodes list, which comes from for_primary_codes column)
+                // Extract the first 4-digit code from primary codes
+                let primary4DigitCode = null;
+                if (project.forCodes && project.forCodes.length > 0) {
+                    // Use the first primary FoR code
+                    const primaryCode = project.forCodes[0].trim();
+                    
+                    // Extract 4-digit code: 
+                    // - If code is 4 digits, use it directly
+                    // - If code is 6 digits, use first 4 digits (parent 4-digit code)
+                    // - If code is 2 digits, extract 4-digit from forAllCodes if available
+                    if (primaryCode.length === 4) {
+                        primary4DigitCode = primaryCode;
+                    } else if (primaryCode.length === 6) {
+                        primary4DigitCode = primaryCode.substring(0, 4);
+                    } else if (primaryCode.length === 2) {
+                        // 2-digit primary code - try to find first 4-digit code from forAllCodes
+                        if (project.forAllCodes && project.forAllCodes.length > 0) {
+                            for (const code of project.forAllCodes) {
+                                const trimmed = code.trim();
+                                if (trimmed.length === 4) {
+                                    primary4DigitCode = trimmed;
+                                    break;
+                                } else if (trimmed.length === 6) {
+                                    primary4DigitCode = trimmed.substring(0, 4);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Only count the project once using the primary 4-digit code
+                if (primary4DigitCode) {
+                    // Normalize to FOR_4DIGIT_ format
+                    const normalizedCode = `FOR_4DIGIT_${primary4DigitCode}`;
+                    
+                    if (!universityForCounts[normalizedUni][normalizedCode]) {
+                        universityForCounts[normalizedUni][normalizedCode] = new Set();
+                    }
+                    universityForCounts[normalizedUni][normalizedCode].add(project.code);
+                    
+                    // Track that this project has a 4-digit code (for "all" view ranking)
+                    universityProjectByForCode[normalizedUni].add(project.code);
+                }
+            });
+            
+            // Convert to links format - value is count of unique projects
+            // Note: links use normalized university names as source
+            Object.keys(universityForCounts).forEach(normalizedUni => {
+                Object.keys(universityForCounts[normalizedUni]).forEach(forCode => {
+                    const projectCount = universityForCounts[normalizedUni][forCode].size;
+                    links.push({
+                        source: normalizedUni,  // Use normalized name for matching
+                        target: forCode,
+                        value: projectCount
+                    });
+                });
+            });
+            
+            // Store overall project counts for quick access
+            const overallCounts = {};
+            Object.keys(universityProjectCounts).forEach(university => {
+                overallCounts[university] = universityProjectCounts[university].size;
+            });
+            
+            // Store projects with 4-digit codes (for "all" view ranking)
+            const projectsWith4DigitCodes = {};
+            Object.keys(universityProjectByForCode).forEach(university => {
+                projectsWith4DigitCodes[university] = universityProjectByForCode[university].size;
+            });
+            
+            // Store project codes per university for 2-digit code filtering
+            // Use normalized university names for consistent matching
+            const universityProjectsBy2Digit = {}; // normalized university -> 2digit -> Set of project codes
+            const universityNameMap = {}; // normalized name -> original name (for debugging)
+            
+            filteredProjects.forEach(project => {
+                if (!project.university || !project.code) return;
+                
+                // Normalize university name for consistent matching
+                const normalizedUni = project.university.trim().toLowerCase();
+                if (!universityProjectsBy2Digit[normalizedUni]) {
+                    universityProjectsBy2Digit[normalizedUni] = {};
+                    universityNameMap[normalizedUni] = project.university; // Store original for reference
+                }
+                
+                // Use the primary FoR code (from for_primary_codes column) to determine 2-digit category
+                // Each project is counted only once based on its primary 4-digit code
+                let primary4DigitCode = null;
+                if (project.forCodes && project.forCodes.length > 0) {
+                    // Use the first primary FoR code
+                    const primaryCode = project.forCodes[0].trim();
+                    
+                    // Extract 4-digit code: 
+                    // - If code is 4 digits, use it directly
+                    // - If code is 6 digits, use first 4 digits (parent 4-digit code)
+                    // - If code is 2 digits, extract 4-digit from forAllCodes if available
+                    if (primaryCode.length === 4) {
+                        primary4DigitCode = primaryCode;
+                    } else if (primaryCode.length === 6) {
+                        primary4DigitCode = primaryCode.substring(0, 4);
+                    } else if (primaryCode.length === 2) {
+                        // 2-digit primary code - try to find first 4-digit code from forAllCodes
+                        if (project.forAllCodes && project.forAllCodes.length > 0) {
+                            for (const code of project.forAllCodes) {
+                                const trimmed = code.trim();
+                                if (trimmed.length === 4) {
+                                    primary4DigitCode = trimmed;
+                                    break;
+                                } else if (trimmed.length === 6) {
+                                    primary4DigitCode = trimmed.substring(0, 4);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Count project in 2-digit category based on primary 4-digit code
+                if (primary4DigitCode && primary4DigitCode.length >= 2) {
+                    const twoDigitCode = primary4DigitCode.substring(0, 2);
+                    
+                    if (!universityProjectsBy2Digit[normalizedUni][twoDigitCode]) {
+                        universityProjectsBy2Digit[normalizedUni][twoDigitCode] = new Set();
+                    }
+                    universityProjectsBy2Digit[normalizedUni][twoDigitCode].add(project.code);
+                }
+            });
+            
+            // Convert to counts - use normalized names as keys
+            const projectsBy2DigitCode = {};
+            Object.keys(universityProjectsBy2Digit).forEach(normalizedUni => {
+                projectsBy2DigitCode[normalizedUni] = {};
+                Object.keys(universityProjectsBy2Digit[normalizedUni]).forEach(twoDigit => {
+                    projectsBy2DigitCode[normalizedUni][twoDigit] = universityProjectsBy2Digit[normalizedUni][twoDigit].size;
+                });
+            });
+            
+            // Also return per-4-digit-code counts for accurate display
+            // This maps: normalizedUni -> 4digitCode -> unique project count
+            const projectsBy4DigitCode = {};
+            Object.keys(universityForCounts).forEach(normalizedUni => {
+                projectsBy4DigitCode[normalizedUni] = {};
+                Object.keys(universityForCounts[normalizedUni]).forEach(forCode => {
+                    // forCode is like "FOR_4DIGIT_4601"
+                    const fourDigit = forCode.replace('FOR_4DIGIT_', '');
+                    projectsBy4DigitCode[normalizedUni][fourDigit] = universityForCounts[normalizedUni][forCode].size;
+                });
+            });
+            
+            return { 
+                links, 
+                overallCounts,  // All projects per university
+                projectsWith4DigitCodes,  // Projects with at least one 4-digit code
+                projectsBy2DigitCode,  // Projects per 2-digit code category
+                projectsBy4DigitCode  // Projects per 4-digit code (for accurate display)
+            };
+        }
+        
         // Load both visualization data and FoR codes
         const loadData = async () => {
             try {
+                // Load CSV data first for year filtering
+                const availableYears = await loadCSVData();
+                
                 // Load visualization data
                 const response = await fetch('visualization_data.json');
                 if (!response.ok) {
@@ -231,7 +608,7 @@
                 console.log(`FoR codes loaded successfully: ${Object.keys(loadedForCodes).length} total codes`);
                 console.log('Sample 2-digit codes:', Object.keys(loadedForCodes).filter(code => code.length === 2).slice(0, 5));
                 
-                return { data: loadedData, forCodes: loadedForCodes };
+                return { data: loadedData, forCodes: loadedForCodes, availableYears };
             } catch (error) {
                 console.error('Error loading data:', error);
                 throw error;
@@ -239,10 +616,12 @@
         };
         
         loadData()
-            .then(({ data: loadedData, forCodes: loadedForCodes }) => {
+            .then(({ data: loadedData, forCodes: loadedForCodes, availableYears }) => {
                 data = loadedData;
                 forCodes = loadedForCodes;
+                csvData = loadedData; // Store for reference
                 populateForCodeDropdowns();
+                populateYearDropdown(availableYears);
                 processDataAndCreateChart();
             })
             .catch(error => {
@@ -286,6 +665,30 @@
             }
         }
         
+        function populateYearDropdown(availableYears) {
+            const yearDropdown = document.getElementById('year-filter');
+            // Clear existing options except "All Years"
+            while (yearDropdown.children.length > 1) {
+                yearDropdown.removeChild(yearDropdown.lastChild);
+            }
+            
+            // Add year options (every 5 years for cleaner UI, plus all years)
+            const yearOptions = [];
+            availableYears.forEach(year => {
+                yearOptions.push(year);
+            });
+            
+            // Add options for each available year
+            yearOptions.forEach(year => {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = `From ${year}`;
+                yearDropdown.appendChild(option);
+            });
+            
+            console.log(`Populated year dropdown with ${yearOptions.length} year options`);
+        }
+        
 
         
 
@@ -293,66 +696,343 @@
         function processDataAndCreateChart() {
             const maxUniversities = parseInt(document.getElementById('max-universities').value);
             const selected2digit = document.getElementById('for-code-2digit').value;
+            const yearFilter = document.getElementById('year-filter').value;
+            const minYear = yearFilter ? parseInt(yearFilter) : null;
             
             // Reset color index for consistent colors
             colorIndex = 0;
             
+            // Get links - rebuild from CSV if year filter is active OR if we need accurate counts for ranking
+            let linksToUse = data.links;
+            let overallCountsFromCSV = null;
+            let projectsWith4DigitCodes = null;
+            let projectsBy2DigitCode = null;
+            let projectsBy4DigitCode = null;
+            
+            // Debug: Log filter state
+            console.log(`=== DEBUG: Filter State ===`);
+            console.log(`Selected 2-digit: ${selected2digit}, Year filter: ${minYear ? `From ${minYear}` : 'All years'}`);
+            console.log(`CSV data available: ${csvProjectData.length > 0}`);
+            
+            // Always build counts from CSV if available, for accurate ranking and display
+            // Year filter: rebuild links AND counts
+            // No year filter but 2-digit selected: use original links but build counts from CSV for ranking
+            if (csvProjectData.length > 0) {
+                if (minYear) {
+                    // Year filter active: rebuild everything from CSV
+                    const rebuilt = rebuildLinksFromCSV(minYear);
+                    linksToUse = rebuilt.links;
+                    overallCountsFromCSV = rebuilt.overallCounts;
+                    projectsWith4DigitCodes = rebuilt.projectsWith4DigitCodes;
+                    projectsBy2DigitCode = rebuilt.projectsBy2DigitCode;
+                    projectsBy4DigitCode = rebuilt.projectsBy4DigitCode;
+                    console.log(`Rebuilt ${linksToUse.length} links from CSV with year filter >= ${minYear}`);
+                    console.log(`Overall project counts (first 5):`, Object.entries(overallCountsFromCSV).slice(0, 5));
+                    if (projectsBy2DigitCode) {
+                        console.log(`projectsBy2DigitCode keys (first 10):`, Object.keys(projectsBy2DigitCode).slice(0, 10));
+                    }
+                } else {
+                    // No year filter: use original links but build counts from CSV for accurate ranking
+                    // Build projectsBy2DigitCode if specific 2-digit code selected
+                    if (selected2digit !== 'overall' && selected2digit !== 'all') {
+                        const rebuilt = rebuildLinksFromCSV(null); // null = no year filter
+                        projectsBy2DigitCode = rebuilt.projectsBy2DigitCode;
+                        projectsBy4DigitCode = rebuilt.projectsBy4DigitCode;
+                        // Also get overall counts for "all" view
+                        overallCountsFromCSV = rebuilt.overallCounts;
+                        projectsWith4DigitCodes = rebuilt.projectsWith4DigitCodes;
+                        console.log(`Built project counts from CSV for ranking (no year filter)`);
+                    }
+                }
+            }
+            
+            // Get universities - extract from links and normalize consistently
+            // This ensures ranking is based on filtered data when year filter is active
+            const uniqueUnis = new Set();
+            const uniNameMap = {}; // normalized -> original name mapping
+            
+            // Extract universities from links and normalize
+            linksToUse.forEach(link => {
+                if (link.source) {
+                    const normalized = link.source.trim().toLowerCase();
+                    uniqueUnis.add(normalized);
+                    // Store original name if different
+                    if (!uniNameMap[normalized]) {
+                        uniNameMap[normalized] = link.source;
+                    }
+                }
+            });
+            
+            // Also include original universities if not using filtered links (for backward compatibility)
+            if (!minYear || csvProjectData.length === 0) {
+                data.nodes.filter(node => node.type === 'university').forEach(node => {
+                    const uniName = node.id || node.name;
+                    const normalized = uniName.trim().toLowerCase();
+                    uniqueUnis.add(normalized);
+                    if (!uniNameMap[normalized]) {
+                        uniNameMap[normalized] = uniName;
+                    }
+                });
+            }
+            
+            // Debug: Log extracted universities
+            console.log(`=== DEBUG: University Extraction ===`);
+            console.log(`Total unique universities: ${uniqueUnis.size}`);
+            console.log(`Sample universities from links (first 10):`, Array.from(uniqueUnis).slice(0, 10));
+            console.log(`Sample name mappings (first 5):`, Object.entries(uniNameMap).slice(0, 5));
+            
+            const universities = Array.from(uniqueUnis).map(normalizedName => {
+                // Get original name from mapping
+                const originalName = uniNameMap[normalizedName] || normalizedName;
+                
+                // Try to find matching node from original data for total_grants reference
+                const originalNode = data.nodes.find(node => 
+                    node.type === 'university' && (
+                        (node.id && node.id.trim().toLowerCase() === normalizedName) ||
+                        (node.name && node.name.trim().toLowerCase() === normalizedName)
+                    )
+                );
+                return {
+                    id: normalizedName, // Use normalized name as id for consistent lookups
+                    name: originalName, // Store original name for display
+                    type: 'university',
+                    total_grants: originalNode ? originalNode.total_grants : undefined
+                };
+            });
+            
             // Get universities and their grant counts
             const universityData = [];
-            const universities = data.nodes.filter(node => node.type === 'university');
+            
+            // Debug: Log lookup data availability
+            console.log(`=== DEBUG: Lookup Data Availability ===`);
+            console.log(`overallCountsFromCSV: ${overallCountsFromCSV ? 'Available' : 'Not available'}`);
+            console.log(`projectsBy2DigitCode: ${projectsBy2DigitCode ? 'Available' : 'Not available'}`);
+            console.log(`projectsWith4DigitCodes: ${projectsWith4DigitCodes ? 'Available' : 'Not available'}`);
             
             universities.forEach(university => {
                 const universityGrants = {};
                 let totalGrants = 0;
+                const normalizedUni = university.id; // id is already normalized
                 
-                if (selected2digit === 'overall') {
-                    // Show overall Discovery Project count for each university
-                    data.links.forEach(link => {
-                        if (link.source === university.id) {
-                            totalGrants += link.value;
+                // Debug: Track lookup results
+                let lookupSource = 'unknown';
+                let lookupValue = 0;
+                
+                    if (selected2digit === 'overall') {
+                        // Show overall Discovery Project count for each university
+                        // For overall view, we need to count unique projects, not sum link values
+                        // (because a project with multiple FoR codes would be counted multiple times)
+                        if (overallCountsFromCSV) {
+                            // Use pre-calculated overall count from CSV (filtered by year if applicable)
+                            lookupValue = overallCountsFromCSV[normalizedUni] || 0;
+                            lookupSource = overallCountsFromCSV[normalizedUni] !== undefined ? 'overallCountsFromCSV' : 'not_found_in_overallCountsFromCSV';
+                            totalGrants = lookupValue;
+                    } else {
+                        // For original data (no year filter), use node's total_grants
+                        if (university.total_grants !== undefined) {
+                            lookupValue = university.total_grants;
+                            lookupSource = 'original_total_grants';
+                            totalGrants = lookupValue;
+                        } else {
+                            // Fallback: calculate from links (may overcount projects with multiple FoR codes)
+                            linksToUse.forEach(link => {
+                                if (link.source === normalizedUni || link.source === university.name) {
+                                    totalGrants += link.value;
+                                }
+                            });
+                            lookupSource = 'fallback_from_links';
+                            lookupValue = totalGrants;
                         }
-                    });
+                    }
                     // Store total in a special key for overall view
                     universityGrants['overall'] = totalGrants;
-                } else if (selected2digit === 'all') {
-                    // Show all 2-digit FoR codes
-                    data.links.forEach(link => {
-                        if (link.source === university.id) {
-                            const forCode = link.target.replace('FOR_', '');
-                            
-                            // Only process 2-digit codes
-                            if (forCode.length === 2) {
-                                universityGrants[forCode] = link.value;
+                    } else if (selected2digit === 'all') {
+                        // Show all 4-digit FoR codes (color-coded by 4-digit codes only)
+                        linksToUse.forEach(link => {
+                            if (link.source === normalizedUni || link.source === university.name) {
+                                // Only process 4-digit codes
+                                if (link.target.startsWith('FOR_4DIGIT_')) {
+                                    const forCode = link.target.replace('FOR_4DIGIT_', '');
+                                    // Only include 4-digit codes (length 4)
+                                    if (forCode.length === 4) {
+                                        universityGrants[forCode] = (universityGrants[forCode] || 0) + link.value;
+                                    }
+                                }
+                            }
+                        });
+                        // For ranking, use count of projects that have at least one 4-digit code
+                        // This ensures universities are ranked by projects matching the current view
+                        if (projectsWith4DigitCodes) {
+                            // Use normalized name for matching
+                            // Use count of projects with 4-digit codes from filtered year
+                            lookupValue = projectsWith4DigitCodes[normalizedUni] || 0;
+                            lookupSource = projectsWith4DigitCodes[normalizedUni] !== undefined ? 'projectsWith4DigitCodes' : 'not_found_in_projectsWith4DigitCodes';
+                            totalGrants = lookupValue;
+                    } else if (minYear && csvProjectData.length > 0) {
+                        // If year filtered but counts not available, count from filtered links
+                        const projectCodes = new Set();
+                        linksToUse.forEach(link => {
+                            if ((link.source === normalizedUni || link.source === university.name) && 
+                                link.target.startsWith('FOR_4DIGIT_')) {
+                                // Note: link.value is already a count, but we need unique projects
+                                // This is approximate - best to use projectsWith4DigitCodes
                                 totalGrants += link.value;
                             }
+                        });
+                        // Rough deduplication estimate
+                        lookupValue = Math.round(totalGrants / 2);
+                        lookupSource = 'approximation_from_links_year_filtered';
+                        totalGrants = lookupValue;
+                    } else {
+                        // No year filter - use original total_grants if available
+                        if (university.total_grants !== undefined) {
+                            lookupValue = university.total_grants;
+                            lookupSource = 'original_total_grants';
+                            totalGrants = lookupValue;
+                        } else {
+                            // Fallback: sum from links (may overcount)
+                            Object.values(universityGrants).forEach(count => {
+                                totalGrants += count;
+                            });
+                            lookupSource = 'fallback_sum_grants';
+                            lookupValue = totalGrants;
                         }
-                    });
+                    }
                 } else {
                     // Show 4-digit codes within the selected 2-digit category
-                    data.links.forEach(link => {
-                        if (link.source === university.id && link.target.startsWith('FOR_4DIGIT_')) {
-                            const forCode = link.target.replace('FOR_4DIGIT_', '');
-                            
-                            // Only include 4-digit codes that start with the selected 2-digit code
-                            if (forCode.startsWith(selected2digit)) {
-                                universityGrants[forCode] = link.value;
-                                totalGrants += link.value;
+                    
+                    // Use unique project counts from CSV if available (for accurate display)
+                    if (projectsBy4DigitCode && projectsBy4DigitCode[normalizedUni]) {
+                        // Use pre-calculated unique project counts per 4-digit code
+                        Object.keys(projectsBy4DigitCode[normalizedUni]).forEach(fourDigit => {
+                            if (fourDigit.startsWith(selected2digit)) {
+                                universityGrants[fourDigit] = projectsBy4DigitCode[normalizedUni][fourDigit];
                             }
+                        });
+                    } else {
+                        // Fallback: use links (may overcount if project has multiple 4-digit codes)
+                        linksToUse.forEach(link => {
+                            // Match by normalized name (from CSV) or original name
+                            if ((link.source === normalizedUni || link.source === university.name) && 
+                                link.target.startsWith('FOR_4DIGIT_')) {
+                                const forCode = link.target.replace('FOR_4DIGIT_', '');
+                                
+                                // Only include 4-digit codes that start with the selected 2-digit code
+                                if (forCode.startsWith(selected2digit)) {
+                                    universityGrants[forCode] = (universityGrants[forCode] || 0) + link.value;
+                                }
+                            }
+                        });
+                    }
+                    // For ranking, use count of unique projects that match the selected 2-digit code
+                    // This ensures universities are ranked by projects in the selected FoR category
+                    let uni2DigitCounts = null;
+                    if (projectsBy2DigitCode) {
+                        // Try to find matching university in projectsBy2DigitCode using normalized name
+                        if (projectsBy2DigitCode[normalizedUni] !== undefined) {
+                            uni2DigitCounts = projectsBy2DigitCode[normalizedUni];
+                        } else {
+                            // University not found in projectsBy2DigitCode - fall through to approximation
+                            console.warn(`University not found in projectsBy2DigitCode: ${university.name} (normalized: ${normalizedUni})`);
+                            console.warn(`Available keys (first 10):`, Object.keys(projectsBy2DigitCode).slice(0, 10));
+                            // Fall through to approximation method below
                         }
-                    });
+                        
+                        if (uni2DigitCounts) {
+                            // Use pre-calculated unique project counts
+                            lookupValue = uni2DigitCounts[selected2digit] || 0;
+                            lookupSource = uni2DigitCounts[selected2digit] !== undefined ? 'projectsBy2DigitCode' : 'not_found_in_projectsBy2DigitCode';
+                            totalGrants = lookupValue;
+                        }
+                    }
+                    
+                    if (!projectsBy2DigitCode || !uni2DigitCounts) {
+                        // Count unique projects from links - need to deduplicate because a project
+                        // can have multiple 4-digit codes within the same 2-digit category
+                        // We approximate by using the maximum count across 4-digit codes for this university
+                        // (since link.value is already a unique project count per 4-digit code)
+                        // Actually, a better approach: sum all link values and divide by average codes per project
+                        // But simplest: use the maximum value which represents the minimum unique project count
+                        // Actually, let's use the sum of unique 4-digit code values as an approximation
+                        // The issue is that a project with codes 4601, 4602 would be counted twice if we sum
+                        // So we need to track unique projects properly
+                        
+                        // For now, use the maximum link.value as a lower bound for unique projects
+                        // This is approximate but better than summing (which overcounts)
+                        let maxCount = 0;
+                        let sumCount = 0;
+                        linksToUse.forEach(link => {
+                            // Match by normalized name (from CSV) or original name
+                            if ((link.source === normalizedUni || link.source === university.name) && 
+                                link.target.startsWith('FOR_4DIGIT_')) {
+                                const forCode = link.target.replace('FOR_4DIGIT_', '');
+                                if (forCode.startsWith(selected2digit)) {
+                                    sumCount += link.value;
+                                    maxCount = Math.max(maxCount, link.value);
+                                }
+                            }
+                        });
+                        
+                        // Use sum divided by estimated average codes per project (rough approximation)
+                        // Typical project has 1-3 FoR codes, so dividing by 1.5-2 is reasonable
+                        // But this is still approximate - ideally we'd track unique project codes
+                        if (sumCount > 0) {
+                            // Conservative estimate: assume average 1.5 codes per project
+                            lookupValue = Math.round(sumCount / 1.5);
+                            // Use max as a lower bound to avoid underestimating too much
+                            lookupValue = Math.max(lookupValue, maxCount);
+                            lookupSource = 'approximation_from_links';
+                            totalGrants = lookupValue;
+                        } else {
+                            totalGrants = 0;
+                            lookupSource = 'no_data';
+                        }
+                    }
+                }
+                
+                // Debug: Log lookup results for top universities or all if debug mode
+                if (university.name.toLowerCase().includes('monash') || 
+                    university.name.toLowerCase().includes('new south wales') ||
+                    university.name.toLowerCase().includes('sydney') ||
+                    university.name.toLowerCase().includes('melbourne')) {
+                    console.log(`=== DEBUG: Lookup for ${university.name} ===`);
+                    console.log(`  Normalized: ${normalizedUni}`);
+                    console.log(`  Source: ${lookupSource}, Value: ${lookupValue || totalGrants}`);
+                    console.log(`  In overallCountsFromCSV: ${overallCountsFromCSV && overallCountsFromCSV[normalizedUni] !== undefined ? 'Yes (' + overallCountsFromCSV[normalizedUni] + ')' : 'No'}`);
+                    if (projectsBy2DigitCode) {
+                        console.log(`  In projectsBy2DigitCode: ${projectsBy2DigitCode[normalizedUni] !== undefined ? 'Yes' : 'No'}`);
+                        if (projectsBy2DigitCode[normalizedUni] && selected2digit !== 'overall' && selected2digit !== 'all') {
+                            console.log(`  Value for ${selected2digit}: ${projectsBy2DigitCode[normalizedUni][selected2digit] || 0}`);
+                        }
+                    }
                 }
                 
                 if (totalGrants > 0) {
                     universityData.push({
-                        university: university.name,
+                        university: university.name, // Use original name for display
                         totalGrants: totalGrants,
-                        grants: universityGrants
+                        grants: universityGrants,
+                        _debug: {
+                            normalizedName: normalizedUni,
+                            lookupSource: lookupSource
+                        }
                     });
                 }
             });
             
             // Sort by total grants and take top N
+            // Debug: log ranking values before sorting (top 15)
+            console.log(`=== DEBUG: Before Sorting (Top 15) ===`);
+            universityData.slice(0, 15).forEach((uni, idx) => {
+                console.log(`${idx + 1}. ${uni.university} - totalGrants = ${uni.totalGrants} (source: ${uni._debug?.lookupSource || 'unknown'})`);
+            });
+            
             universityData.sort((a, b) => b.totalGrants - a.totalGrants);
+            // Debug: log ranking after sorting (top 15)
+            console.log(`=== DEBUG: After Sorting (Top 15) ===`);
+            universityData.slice(0, 15).forEach((uni, idx) => {
+                console.log(`${idx + 1}. ${uni.university} - totalGrants = ${uni.totalGrants} (source: ${uni._debug?.lookupSource || 'unknown'})`);
+            });
             universityData.splice(maxUniversities);
             
             // Get all unique FoR codes from the filtered data
@@ -364,12 +1044,17 @@
             });
             
             // Prepare data for Chart.js
+            // Use original names from university.name (not normalized id)
             const labels = universityData.map(uni => uni.university);
             const datasets = Array.from(allForCodes).map(forCode => {
                 const data = universityData.map(uni => uni.grants[forCode] || 0);
                 const forCodeName = forCodes[forCode] || forCode;
                 // Include the code in the legend label for better identification
-                const legendLabel = forCode.length === 4 ? `${forCode}: ${forCodeName}` : forCodeName;
+                let legendLabel = forCode.length === 4 ? `${forCode}: ${forCodeName}` : forCodeName;
+                // Truncate very long labels to prevent legend overflow
+                if (legendLabel.length > 50) {
+                    legendLabel = legendLabel.substring(0, 47) + '...';
+                }
                 return {
                     label: legendLabel,
                     data: data,
@@ -380,7 +1065,7 @@
             
             console.log(`Created chart with ${datasets.length} datasets from ${allForCodes.size} unique FoR codes`);
             
-            createChart(labels, datasets);
+            createChart(labels, datasets, minYear);
         }
         
         let colorIndex = 0;
@@ -396,9 +1081,54 @@
             return color;
         }
         
-        function createChart(labels, datasets) {
+        function createChart(labels, datasets, minYear = null) {
             const container = document.getElementById('visualization');
-            container.innerHTML = '<div class="chart-container"><canvas id="chartCanvas"></canvas></div>';
+            
+            const selected2digit = document.getElementById('for-code-2digit').value;
+            const isOverall = selected2digit === 'overall';
+            
+            // Determine if we should use side legend (when many datasets)
+            const useSideLegend = datasets.length > 10;
+            const chartHeight = useSideLegend ? 700 : 600;
+            
+            // Build title with year filter if active
+            let baseTitle = '';
+            if (selected2digit === 'overall') {
+                baseTitle = 'ARC Discovery Projects - Universities by Total Project Count';
+            } else if (selected2digit === 'all') {
+                baseTitle = 'ARC Discovery Projects - Universities by 4-digit FoR Codes';
+            } else {
+                const forCodeName = forCodes[selected2digit] || selected2digit;
+                baseTitle = `ARC Discovery Projects - Universities by 4-digit FoR Codes in ${selected2digit}: ${forCodeName}`;
+            }
+            
+            const title = minYear ? `${baseTitle} (From ${minYear})` : baseTitle;
+            
+            // Create chart HTML structure
+            if (useSideLegend) {
+                container.innerHTML = `
+                    <div style="margin-bottom: 15px; font-size: 18px; font-weight: 500; color: #1a1a1a; text-align: center;">
+                        ${title}
+                    </div>
+                    <div class="chart-wrapper">
+                        <div class="chart-main">
+                            <div class="chart-container" style="height: ${chartHeight}px;">
+                                <canvas id="chartCanvas"></canvas>
+                            </div>
+                        </div>
+                        <div class="legend-sidebar" id="legendSidebar">
+                            <div style="font-weight: 600; margin-bottom: 10px; color: #495057; font-size: 14px;">Legend</div>
+                            <div id="legendItems"></div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <div class="chart-container" style="height: ${chartHeight}px;">
+                        <canvas id="chartCanvas"></canvas>
+                    </div>
+                `;
+            }
             
             const ctx = document.getElementById('chartCanvas').getContext('2d');
             
@@ -407,8 +1137,20 @@
                 chart.destroy();
             }
             
-            const selected2digit = document.getElementById('for-code-2digit').value;
-            const isOverall = selected2digit === 'overall';
+            // Build legend HTML if using side legend
+            if (useSideLegend) {
+                const legendContainer = document.getElementById('legendItems');
+                legendContainer.innerHTML = '';
+                datasets.forEach((dataset, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.style.cssText = 'display: flex; align-items: center; margin-bottom: 8px; font-size: 12px;';
+                    legendItem.innerHTML = `
+                        <span style="display: inline-block; width: 16px; height: 16px; background-color: ${dataset.backgroundColor}; margin-right: 8px; border-radius: 3px;"></span>
+                        <span style="color: #495057; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${dataset.label}">${dataset.label}</span>
+                    `;
+                    legendContainer.appendChild(legendItem);
+                });
+            }
             
             chart = new Chart(ctx, {
                 type: 'bar',
@@ -421,17 +1163,8 @@
                     maintainAspectRatio: false,
                     plugins: {
                         title: {
-                            display: true,
-                            text: (() => {
-                                if (selected2digit === 'overall') {
-                                    return 'ARC Discovery Projects - Universities by Total Project Count';
-                                } else if (selected2digit === 'all') {
-                                    return 'ARC Discovery Projects - Universities by 2-digit FoR Codes';
-                                } else {
-                                    const forCodeName = forCodes[selected2digit] || selected2digit;
-                                    return `ARC Discovery Projects - Universities by 4-digit FoR Codes in ${selected2digit}: ${forCodeName}`;
-                                }
-                            })(),
+                            display: !useSideLegend, // Only show title if not using side legend
+                            text: title,
                             font: {
                                 size: 18,
                                 weight: '500'
@@ -440,15 +1173,21 @@
                             padding: 20
                         },
                         legend: {
+                            display: !useSideLegend, // Hide Chart.js legend if using side legend
                             position: 'top',
+                            maxHeight: datasets.length > 15 ? 150 : datasets.length > 8 ? 200 : null,
                             labels: {
                                 usePointStyle: true,
-                                padding: 20,
+                                padding: datasets.length > 15 ? 6 : datasets.length > 8 ? 10 : 15,
                                 font: {
-                                    size: 13
+                                    size: datasets.length > 15 ? 10 : datasets.length > 8 ? 11 : 13
                                 },
-                                color: '#495057'
-                            }
+                                color: '#495057',
+                                boxWidth: datasets.length > 15 ? 10 : 12,
+                                boxHeight: datasets.length > 15 ? 10 : 12,
+                                maxWidth: datasets.length > 15 ? 140 : datasets.length > 8 ? 170 : 200
+                            },
+                            onClick: null // Disable legend click by default
                         },
                         tooltip: {
                             mode: 'index',
@@ -549,6 +1288,17 @@
             document.getElementById('max-universities').addEventListener('change', function() {
                 processDataAndCreateChart();
             });
+            
+            // Year filter control
+            document.getElementById('year-filter').addEventListener('change', function() {
+                const selectedYear = this.value;
+                if (selectedYear) {
+                    console.log(`Year filter selected: From ${selectedYear}`);
+                } else {
+                    console.log('Year filter cleared: Showing all years');
+                }
+                processDataAndCreateChart();
+            });
         }
         
         // Initialize controls after DOM is loaded
@@ -560,3 +1310,4 @@
 
 </body>
 </html>
+
