@@ -35,12 +35,26 @@ jobs:
       run: |
         python scripts/static_analysis_optimized.py
         python scripts/sync_site_assets.py
-        cp site/arc_analysis_optimized.html site/index.html
         touch site/.nojekyll
-        echo "Generated HTML file:"
-        ls -la site/index.html
-        echo "File size:"
-        du -h site/index.html
+        echo "Hub: site/index.html (not overwritten). Optimized CI rankings: site/arc_analysis_optimized.html"
+        ls -la site/index.html site/arc_analysis_optimized.html
+        du -h site/arc_analysis_optimized.html
+
+    - name: Note lead-citation CSVs for Pages
+      run: |
+        for f in \
+          data/discovery/arc_discovery_projects_2010_2026_with_for_lead_citations.csv \
+          data/fellowship/arc_fellowships_lead_citations.csv; do
+          if [ ! -f "$f" ]; then
+            echo "::warning::Missing $f in the repo — sync could not copy it into site/. The lead citations chart may fail or show DP-only until you commit these files (build with scripts/lead_ci_citations_openalex.py then git add)."
+          fi
+        done
+        if [ -f site/arc_discovery_projects_2010_2026_with_for_lead_citations.csv ]; then
+          echo "Lead citations Discovery CSV present in site bundle."
+        fi
+        if [ -f site/arc_fellowships_lead_citations.csv ]; then
+          echo "Lead citations fellowship CSV present in site bundle."
+        fi
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3

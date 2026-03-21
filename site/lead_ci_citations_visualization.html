@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lead CI citations by award year (OpenAlex)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; color: #2c3e50; }
+        .container { max-width: 1100px; margin: 0 auto; background: #fff; border-radius: 8px; padding: 28px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+        h1 { text-align: center; font-weight: 300; font-size: 1.9rem; margin-bottom: 8px; }
+        .subtitle { text-align: center; color: #6c757d; font-size: 0.95rem; margin-bottom: 8px; }
+        .controls { display: flex; flex-wrap: wrap; gap: 16px 24px; justify-content: center; align-items: flex-end; margin: 24px 0; }
+        .control-group { display: flex; flex-direction: column; gap: 6px; }
+        .control-group label { font-size: 13px; font-weight: 500; color: #495057; }
+        .control-group select { padding: 8px 12px; border: 1px solid #dee2e6; border-radius: 6px; font-size: 14px; min-width: 220px; background: #fff; }
+        .chart-wrap { position: relative; height: 420px; margin-top: 16px; }
+        .error { background: #f8d7da; color: #721c24; padding: 16px; border-radius: 6px; margin: 16px 0; }
+        .footnote { font-size: 0.8rem; color: #6c757d; margin-top: 24px; line-height: 1.5; border-top: 1px solid #e9ecef; padding-top: 16px; }
+        a.back { display: inline-block; margin-bottom: 16px; color: #007bff; text-decoration: none; font-size: 14px; }
+        a.back:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back" href="index.html">&larr; Back to ARC Research Hub</a>
+        <h1>Lead CI citations at award year</h1>
+        <p class="subtitle">Y-axis: mean or median of OpenAlex cumulative citations (through each grant&rsquo;s <code>funding_commencement_year</code>) for the <strong>lead</strong> investigator (Discovery chief investigator; DECRA / other fellowship holder).</p>
+        <p class="subtitle">X-axis: funding commencement year (from <strong>2010</strong> onward, matching enrichment). Filter by FoR codes (same hierarchy as other Discovery tools).</p>
+
+        <div id="err" class="error" style="display:none;"></div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="grant-type">Grant scheme</label>
+                <select id="grant-type">
+                    <option value="compare_all" selected id="opt-compare-all">DP + DECRA + other fellowships</option>
+                    <option value="discovery">Discovery Projects (DP)</option>
+                    <option value="decra" id="opt-decra">DECRA</option>
+                    <option value="fellowship_other" id="opt-other-fs">Other fellowships</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="stat-mode">Aggregation</label>
+                <select id="stat-mode">
+                    <option value="mean" selected>Mean citations</option>
+                    <option value="median">Median citations</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="for-code-2digit">2-digit FoR</label>
+                <select id="for-code-2digit"></select>
+            </div>
+            <div class="control-group">
+                <label for="for-code-4digit">4-digit FoR</label>
+                <select id="for-code-4digit"></select>
+            </div>
+            <div class="control-group">
+                <label for="for-code-6digit">6-digit FoR</label>
+                <select id="for-code-6digit"></select>
+            </div>
+        </div>
+
+        <div class="chart-wrap">
+            <canvas id="chart"></canvas>
+        </div>
+
+        <p class="footnote">
+            <strong>Method:</strong> Citations are from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> author profiles, summing per-calendar-year <code>cited_by_count</code> entries up to and including the grant&rsquo;s funding commencement year (not identical to Google Scholar).
+            Grants without a lead ORCID or with no OpenAlex match show as empty and are omitted from the mean/median for that year.
+            Only grants with <code>funding_commencement_year &ge; 2010</code> are included in the chart and in the enrichment script by default (<code>--min-funding-year</code>).
+            FoR filter: a grant is included if <code>for_all_codes</code> contains a code consistent with the selection (6-digit exact; 4-digit prefix; 2-digit division).
+            <br><strong>Discovery data:</strong> <code>arc_discovery_projects_2010_2026_with_for_lead_citations.csv</code> (lead = first chief investigator ORCID).
+            <strong>Fellowship data:</strong> <code>arc_fellowships_lead_citations.csv</code> (lead = first fellowship holder ORCID). The chart groups fellowships using <code>scheme_name</code>: <strong>DECRA</strong> = <em>Discovery Early Career Researcher Award</em>; <strong>other fellowships</strong> = Future, Laureate, and Industry Laureate. Build both with <code>python scripts/lead_ci_citations_openalex.py</code> and <code>python scripts/sync_site_assets.py</code>.
+        </p>
+    </div>
+
+    <script>
+        /** Only include grants with funding commencement year >= this value. */
+        const MIN_FUNDING_YEAR = 2010;
+        /** ARC CSV value for DECRA (Discovery Early Career Researcher Award). */
+        const DECRA_SCHEME = 'Discovery Early Career Researcher Award';
+
+        let forCodes = null;
+        let projectsDiscovery = [];
+        let projectsFellowship = [];
+        let chart = null;
+        /** Tooltip context: years + per-dataset citation arrays by year */
+        let chartMeta = { mode: 'mean', grantType: 'compare_all', years: [], seriesByYear: [] };
+
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                const nextChar = i < line.length - 1 ? line[i + 1] : null;
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') { current += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            result.push(current);
+            return result;
+        }
+
+        function median(arr) {
+            if (!arr.length) return null;
+            const s = [...arr].sort((a, b) => a - b);
+            const m = Math.floor(s.length / 2);
+            return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+        }
+
+        function matchesForFilter(forAllStr, d2, d4, d6) {
+            if (!forAllStr || (!d2 && !d4 && !d6)) return true;
+            const parts = forAllStr.split(';').map(c => c.trim()).filter(Boolean);
+            if (d6) return parts.some(c => c === d6);
+            if (d4) return parts.some(c => c.startsWith(d4) && (c.length === 4 || c.length === 6));
+            if (d2) return parts.some(c => c.startsWith(d2));
+            return true;
+        }
+
+        function populate2Digit() {
+            const el = document.getElementById('for-code-2digit');
+            el.innerHTML = '<option value="">All FoR codes</option>';
+            const two = Object.keys(forCodes).filter(c => c.length === 2).sort();
+            two.forEach(code => {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = `${code}: ${forCodes[code] || code}`;
+                el.appendChild(opt);
+            });
+            repopulate4();
+        }
+
+        function repopulate4() {
+            const d2 = document.getElementById('for-code-2digit').value;
+            const el = document.getElementById('for-code-4digit');
+            el.innerHTML = '<option value="">All in division (or all FoR)</option>';
+            if (d2) {
+                Object.keys(forCodes).filter(c => c.length === 4 && c.startsWith(d2)).sort().forEach(code => {
+                    const opt = document.createElement('option');
+                    opt.value = code;
+                    opt.textContent = `${code}: ${forCodes[code] || code}`;
+                    el.appendChild(opt);
+                });
+            }
+            repopulate6();
+        }
+
+        function repopulate6() {
+            const d4 = document.getElementById('for-code-4digit').value;
+            const el = document.getElementById('for-code-6digit');
+            el.innerHTML = '<option value="">All in group</option>';
+            if (d4) {
+                Object.keys(forCodes).filter(c => c.length === 6 && c.startsWith(d4)).sort().forEach(code => {
+                    const opt = document.createElement('option');
+                    opt.value = code;
+                    opt.textContent = `${code}: ${forCodes[code] || code}`;
+                    el.appendChild(opt);
+                });
+            }
+        }
+
+        function aggregateByYear(projectList, d2, d4, d6) {
+            const byYear = {};
+            projectList.forEach(p => {
+                if (p.year < MIN_FUNDING_YEAR) return;
+                if (!matchesForFilter(p.forAllCodes, d2, d4, d6)) return;
+                if (p.citations === null || p.citations === undefined || Number.isNaN(p.citations)) return;
+                if (!byYear[p.year]) byYear[p.year] = [];
+                byYear[p.year].push(p.citations);
+            });
+            return byYear;
+        }
+
+        function yearStat(arr, mode) {
+            if (!arr || !arr.length) return null;
+            if (mode === 'median') return median(arr);
+            return arr.reduce((s, v) => s + v, 0) / arr.length;
+        }
+
+        function isDecraScheme(schemeName) {
+            return (schemeName || '') === DECRA_SCHEME;
+        }
+
+        function unionSortedYears(...byYearObjs) {
+            const s = new Set();
+            byYearObjs.forEach(o => {
+                if (!o) return;
+                Object.keys(o).forEach(k => s.add(Number(k)));
+            });
+            return [...s].sort((a, b) => a - b);
+        }
+
+        function valuesForYears(byYear, years, mode) {
+            return years.map(y => yearStat(byYear[y], mode));
+        }
+
+        function buildChart() {
+            const d2 = document.getElementById('for-code-2digit').value;
+            const d4 = document.getElementById('for-code-4digit').value;
+            const d6 = document.getElementById('for-code-6digit').value;
+            const mode = document.getElementById('stat-mode').value;
+            const grantType = document.getElementById('grant-type').value;
+
+            const hasFs = projectsFellowship.length > 0;
+
+            const byDp = aggregateByYear(projectsDiscovery, d2, d4, d6);
+            const fsDecraList = projectsFellowship.filter(p => isDecraScheme(p.schemeName));
+            const fsOtherList = projectsFellowship.filter(p => !isDecraScheme(p.schemeName));
+            const byFsDecra = aggregateByYear(fsDecraList, d2, d4, d6);
+            const byFsOther = aggregateByYear(fsOtherList, d2, d4, d6);
+
+            if (chart) chart.destroy();
+            const ctx = document.getElementById('chart').getContext('2d');
+
+            const yTitle = mode === 'median' ? 'Median citations' : 'Mean citations';
+            const mlab = mode === 'median' ? 'median' : 'mean';
+
+            const chartOptions = (seriesByYear) => ({
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: true, position: 'top' },
+                    tooltip: {
+                        callbacks: {
+                            afterLabel: (c) => {
+                                const y = chartMeta.years[c.dataIndex];
+                                const by = seriesByYear[c.datasetIndex];
+                                const n = (by[y] || []).length;
+                                return `${n} grant(s) in year`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Funding commencement year' } },
+                    y: { beginAtZero: true, title: { display: true, text: yTitle } }
+                }
+            });
+
+            function oneLineFilled(byYear, border, bg, label) {
+                const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
+                const values = valuesForYears(byYear, years, mode);
+                chartMeta = { mode, grantType, years, seriesByYear: [byYear] };
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years.map(String),
+                        datasets: [{
+                            label,
+                            data: values,
+                            borderColor: border,
+                            backgroundColor: bg,
+                            fill: true,
+                            tension: 0.15,
+                            spanGaps: false,
+                        }]
+                    },
+                    options: chartOptions(chartMeta.seriesByYear),
+                });
+            }
+
+            function multiLine(years, datasets, seriesByYear) {
+                chartMeta = { mode, grantType, years, seriesByYear };
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: years.map(String),
+                        datasets: datasets.map(d => ({
+                            label: d.label,
+                            data: d.data,
+                            borderColor: d.borderColor,
+                            backgroundColor: d.bg || 'rgba(0,0,0,0.04)',
+                            fill: false,
+                            tension: 0.15,
+                            spanGaps: false,
+                        }))
+                    },
+                    options: chartOptions(seriesByYear),
+                });
+            }
+
+            if (grantType === 'discovery') {
+                oneLineFilled(
+                    byDp,
+                    '#007bff',
+                    'rgba(0, 123, 255, 0.1)',
+                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`
+                );
+                return;
+            }
+
+            if (!hasFs) {
+                oneLineFilled(
+                    byDp,
+                    '#007bff',
+                    'rgba(0, 123, 255, 0.1)',
+                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`
+                );
+                return;
+            }
+
+            if (grantType === 'decra') {
+                oneLineFilled(
+                    byFsDecra,
+                    '#198754',
+                    'rgba(25, 135, 84, 0.12)',
+                    `DECRA — ${mlab} citations (OpenAlex)`
+                );
+                return;
+            }
+
+            if (grantType === 'fellowship_other') {
+                oneLineFilled(
+                    byFsOther,
+                    '#fd7e14',
+                    'rgba(253, 126, 20, 0.12)',
+                    `Other fellowships — ${mlab} citations (OpenAlex)`
+                );
+                return;
+            }
+
+            /* compare_all: DP + DECRA + other */
+            const years = unionSortedYears(byDp, byFsDecra, byFsOther);
+            multiLine(years, [
+                {
+                    label: `DP — ${mlab}`,
+                    data: valuesForYears(byDp, years, mode),
+                    borderColor: '#007bff',
+                    bg: 'rgba(0, 123, 255, 0.06)',
+                },
+                {
+                    label: `DECRA — ${mlab}`,
+                    data: valuesForYears(byFsDecra, years, mode),
+                    borderColor: '#198754',
+                    bg: 'rgba(25, 135, 84, 0.06)',
+                },
+                {
+                    label: `Other fellowships — ${mlab}`,
+                    data: valuesForYears(byFsOther, years, mode),
+                    borderColor: '#fd7e14',
+                    bg: 'rgba(253, 126, 20, 0.06)',
+                },
+            ], [byDp, byFsDecra, byFsOther]);
+        }
+
+        function parseLeadCitationCsv(text, includeScheme) {
+            const lines = text.split('\n').filter(l => l.trim());
+            const headers = parseCSVLine(lines[0]);
+            const yi = headers.indexOf('funding_commencement_year');
+            const fi = headers.indexOf('for_all_codes');
+            const ci = headers.indexOf('lead_ci_citations_openalex_through_award_year');
+            const si = headers.indexOf('scheme_name');
+            if (yi === -1 || fi === -1 || ci === -1) {
+                throw new Error('CSV missing required columns (funding_commencement_year, for_all_codes, lead_ci_citations_openalex_through_award_year).');
+            }
+            if (includeScheme && si === -1) {
+                console.warn('Fellowship CSV missing scheme_name; DECRA vs other split will be wrong. Rebuild from arc_fellowships.csv.');
+            }
+            const out = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = parseCSVLine(lines[i]);
+                if (values.length <= Math.max(yi, fi, ci)) continue;
+                const year = parseInt(values[yi].trim(), 10);
+                if (Number.isNaN(year)) continue;
+                const citRaw = values[ci].trim();
+                let citations = null;
+                if (citRaw !== '') {
+                    const n = parseInt(citRaw, 10);
+                    if (!Number.isNaN(n)) citations = n;
+                }
+                const schemeName = includeScheme && si >= 0 ? (values[si] || '').trim() : '';
+                out.push({ year, forAllCodes: values[fi] || '', citations, schemeName });
+            }
+            return out;
+        }
+
+        async function init() {
+            const errEl = document.getElementById('err');
+            try {
+                const forRes = await fetch('for_codes_flat.json');
+                if (!forRes.ok) throw new Error(`FoR codes: HTTP ${forRes.status}`);
+                const forJson = await forRes.json();
+                forCodes = forJson.codes;
+                populate2Digit();
+
+                const csvRes = await fetch('arc_discovery_projects_2010_2026_with_for_lead_citations.csv');
+                if (!csvRes.ok) {
+                    throw new Error(`Discovery lead citations CSV missing (HTTP ${csvRes.status}). Run scripts/lead_ci_citations_openalex.py then scripts/sync_site_assets.py.`);
+                }
+                projectsDiscovery = parseLeadCitationCsv(await csvRes.text(), false);
+
+                const fsRes = await fetch('arc_fellowships_lead_citations.csv');
+                if (fsRes.ok) {
+                    projectsFellowship = parseLeadCitationCsv(await fsRes.text(), true);
+                } else {
+                    projectsFellowship = [];
+                    console.warn('Fellowship lead citations CSV not found; only Discovery mode available. Build with: python scripts/lead_ci_citations_openalex.py --cache-only --input data/fellowship/arc_fellowships.csv --output data/fellowship/arc_fellowships_lead_citations.csv');
+                }
+
+                const optCompare = document.getElementById('opt-compare-all');
+                const optDecra = document.getElementById('opt-decra');
+                const optOther = document.getElementById('opt-other-fs');
+                const grantSel = document.getElementById('grant-type');
+                if (!projectsFellowship.length) {
+                    optCompare.disabled = true;
+                    optDecra.disabled = true;
+                    optOther.disabled = true;
+                    optCompare.textContent = 'DP + DECRA + other (fellowship CSV missing)';
+                    optDecra.textContent = 'DECRA (CSV missing)';
+                    optOther.textContent = 'Other fellowships (CSV missing)';
+                    if (grantSel.value === 'compare_all' || grantSel.value === 'decra' || grantSel.value === 'fellowship_other') {
+                        grantSel.value = 'discovery';
+                    }
+                }
+
+                document.getElementById('for-code-2digit').addEventListener('change', () => { repopulate4(); buildChart(); });
+                document.getElementById('for-code-4digit').addEventListener('change', () => { repopulate6(); buildChart(); });
+                document.getElementById('for-code-6digit').addEventListener('change', buildChart);
+                document.getElementById('stat-mode').addEventListener('change', buildChart);
+                document.getElementById('grant-type').addEventListener('change', buildChart);
+
+                buildChart();
+            } catch (e) {
+                errEl.style.display = 'block';
+                errEl.textContent = e.message || String(e);
+                console.error(e);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

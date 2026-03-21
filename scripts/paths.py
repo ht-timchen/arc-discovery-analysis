@@ -15,12 +15,16 @@ OUTPUTS = REPO_ROOT / "outputs"
 OUTPUTS_ANALYSIS = OUTPUTS / "analysis"
 OUTPUTS_FELLOWSHIP = OUTPUTS / "fellowship"
 OUTPUTS_CACHE = OUTPUTS / "cache"
+OPENALEX_AUTHORS_CACHE = OUTPUTS_CACHE / "openalex_authors.json"
 
 SITE_DIR = REPO_ROOT / "site"
 
 # Discovery datasets
 DISCOVERY_CSV_2025 = DATA_DISCOVERY / "arc_discovery_projects_2010_2025_with_for.csv"
 DISCOVERY_CSV_2026 = DATA_DISCOVERY / "arc_discovery_projects_2010_2026_with_for.csv"
+DISCOVERY_CSV_LEAD_CITATIONS = DATA_DISCOVERY / (
+    "arc_discovery_projects_2010_2026_with_for_lead_citations.csv"
+)
 DISCOVERY_JSON_2026 = DATA_DISCOVERY / "arc_discovery_projects_2010_2026_with_for.json"
 DISCOVERY_UNIVERSITIES_CSV = DATA_DERIVED / "arc_discovery_projects_universities.csv"
 DISCOVERY_UNIVERSITIES_JSON = DATA_DERIVED / "arc_discovery_projects_universities.json"
@@ -28,6 +32,7 @@ DISCOVERY_UNIVERSITIES_JSON = DATA_DERIVED / "arc_discovery_projects_universitie
 # Fellowship
 FELLOWSHIP_CSV = DATA_FELLOWSHIP / "arc_fellowships.csv"
 FELLOWSHIP_JSON = DATA_FELLOWSHIP / "arc_fellowships.json"
+FELLOWSHIP_CSV_LEAD_CITATIONS = DATA_FELLOWSHIP / "arc_fellowships_lead_citations.csv"
 
 # FoR reference
 FOR_CODES_JSON = DATA_REFERENCE / "for_codes.json"
@@ -48,3 +53,5 @@ SITE_FOR_CODES_FLAT = SITE_DIR / "for_codes_flat.json"
 SITE_VISUALIZATION_DATA = SITE_DIR / "visualization_data.json"
 SITE_FELLOWSHIP_VIZ_DATA = SITE_DIR / "fellowship_visualization_data.json"
 SITE_OPTIMIZED_HTML = SITE_DIR / "arc_analysis_optimized.html"
+SITE_LEAD_CITATIONS_CSV = SITE_DIR / "arc_discovery_projects_2010_2026_with_for_lead_citations.csv"
+SITE_FELLOWSHIP_LEAD_CITATIONS_CSV = SITE_DIR / "arc_fellowships_lead_citations.csv"

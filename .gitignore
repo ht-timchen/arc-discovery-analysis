@@ -57,6 +57,8 @@ outputs/cache/
 
 # Mirrored into site/ by scripts/sync_site_assets.py (canonical copies under data/ and outputs/)
 site/arc_discovery_projects_2010_2026_with_for.csv
+site/arc_discovery_projects_2010_2026_with_for_lead_citations.csv
+site/arc_fellowships_lead_citations.csv
 site/for_codes_flat.json
 site/visualization_data.json
 site/fellowship_visualization_data.json

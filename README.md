@@ -52,11 +52,24 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 
 ## 🏗️ Architecture
 
-- **Hub Structure**: Central `site/index.html` with navigation to specialized analysis tools (the GitHub Actions deploy replaces this file with the optimized Discovery analysis build, matching previous behaviour)
+- **Hub Structure**: Central `site/index.html` links to specialized tools; CI rankings live at `site/arc_analysis_optimized.html` (also linked from the hub)
 - **Static Sites**: Each analysis tool is a self-contained HTML file under `site/`; some load JSON/CSV via `fetch()` from the same folder
 - **Client-side Processing**: All filtering, ranking, and visualization done in browser
 - **No Backend**: Fully self-contained for easy deployment
 - **GitHub Pages**: Workflow publishes the `site/` directory only
+
+### GitHub Pages deploy
+
+The workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs on push to `main` / `master`: it builds `arc_analysis_optimized.html`, runs `scripts/sync_site_assets.py`, and deploys the **`site/`** folder to the `gh-pages` branch (same pattern as [peaceiris/actions-gh-pages](https://github.com/peaceiris/actions-gh-pages)).
+
+Enable **Settings → Pages → Build from branch `gh-pages` / root** (or your repo’s equivalent).
+
+The **lead citations** page loads CSVs from the same origin. Those files are copied into `site/` during the workflow **only if** the enriched inputs exist in the repository:
+
+- `data/discovery/arc_discovery_projects_2010_2026_with_for_lead_citations.csv`
+- `data/fellowship/arc_fellowships_lead_citations.csv`
+
+Generate them with `scripts/lead_ci_citations_openalex.py`, run `sync_site_assets.py`, then **commit the `data/...` files** so CI can ship them. (Mirrored `site/*.csv` copies are gitignored on the default branch to avoid duplicates; the deploy job recreates them from `data/`.)
 
 ## Repository layout
 
@@ -78,6 +91,16 @@ pip install -r requirements.txt
 python scripts/static_analysis_optimized.py
 python scripts/sync_site_assets.py
 ```
+
+**Lead CI citations (OpenAlex):** citations are computed for grants with **`funding_commencement_year >= 2010`** by default (matches the chart). Use a higher `--min-funding-year` to limit API calls. Build the enriched CSV (uses `outputs/cache/`; pass `--mailto your@email` for OpenAlex), then sync:
+
+```bash
+python scripts/lead_ci_citations_openalex.py --mailto your@email
+python scripts/lead_ci_citations_openalex.py --mailto your@email --input data/fellowship/arc_fellowships.csv --output data/fellowship/arc_fellowships_lead_citations.csv
+python scripts/sync_site_assets.py
+```
+
+Use `--cache-only` to apply the existing cache without new API calls. Timeouts and rate limits are handled with retries (`--max-retries`, `--retry-backoff-base`; 429 responses honor `Retry-After` when sent). Open `site/lead_ci_citations_visualization.html` from the hub or directly (grant scheme picker: **DP**, **DECRA**, **other fellowships**, or all three; `scheme_name` in the fellowship CSV; chart uses **year ≥ 2010** by default, same as enrichment).
 
 Preview locally (serves `site/` on port 8000):
 
