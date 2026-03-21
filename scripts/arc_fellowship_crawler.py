@@ -161,7 +161,12 @@ def main():
     parser.add_argument("--max-pages", type=int, default=None, help="Limit number of pages to scan (for testing)")
     parser.add_argument("--page-size", type=int, default=1000, help="Page size for list endpoint")
     parser.add_argument("--sleep", type=float, default=0.1, help="Sleep seconds between detail requests to be polite")
-    parser.add_argument("--year-from", type=int, default=None, help="Only include grants with funding-commencement-year >= this year")
+    parser.add_argument(
+        "--year-from",
+        type=int,
+        default=2010,
+        help="Only include grants with funding-commencement-year >= this year (default: 2010; use a lower year to include older cohorts)",
+    )
     parser.add_argument("--year-to", type=int, default=None, help="Only include grants with funding-commencement-year <= this year")
     parser.add_argument("--scheme-filter", choices=["all", "decra", "future", "laureate"], default="all", 
                        help="Filter by specific fellowship scheme")

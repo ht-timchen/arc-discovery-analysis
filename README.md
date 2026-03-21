@@ -1,6 +1,6 @@
 # ARC Research Hub
 
-A comprehensive analysis hub for Australian Research Council (ARC) research data, featuring interactive visualizations and rankings for Discovery Projects and Fellowship schemes from 2010-2025.
+A comprehensive analysis hub for Australian Research Council (ARC) research data, featuring interactive visualizations and rankings for Discovery Projects and Fellowship schemes (fellowships through **2026** commencement where published on the ARC Data Portal).
 
 ## 🌐 Live Demo
 
@@ -11,12 +11,12 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 ### 🏛️ Discovery Projects Analysis
 - **Interactive stacked bar chart** showing university distribution across Fields of Research (FoR) codes
 - **Research patterns** and institutional strengths across academic disciplines
-- **Data coverage**: 2010-2025 Discovery Projects with comprehensive FoR code mapping
+- **Data coverage**: 2010-2026 Discovery Projects with comprehensive FoR code mapping
 
 ### 🏆 Fellowship Analysis  
 - **Interactive visualization** of ARC Fellowship schemes (DECRA, Future Fellowships, Laureate Fellowships)
 - **University distribution** across research areas and fellowship types
-- **Data coverage**: 2010-2025 Fellowship data with 5,148 fellowships across 53 universities
+- **Data coverage**: 2010-2026 Fellowship data with **5,382** funded fellowships (ARC Data Portal), **54** administering organisations in the viz export
 
 ### 👥 Chief Investigators Ranking
 - **Comprehensive rankings** and performance metrics of Chief Investigators
@@ -30,16 +30,16 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 
 ## 📈 Data Coverage
 
-### Discovery Projects (2010-2025)
+### Discovery Projects (2010-2026)
 - **2,735 FoR codes** across all research disciplines
 - **Top 5,000 Chief Investigators** with detailed project information
 - **Tiered rankings**: Top 50 (broad), Top 30 (4-digit), Top 10 (6-digit)
 - **Year-based filtering** for focused analysis
 
-### Fellowship Schemes (2010-2025)
-- **5,148 fellowships** across all ARC fellowship types
-- **53 universities** with comprehensive coverage
-- **290 FoR codes** mapped to fellowship activities
+### Fellowship Schemes (2010-2026)
+- **5,382 funded fellowships** in the crawl (DECRA, Future, Laureate, Industry Laureate; **2026** cohort is DECRA-only in the portal as of last refresh)
+- **54 universities** (administering organisations) in the fellowship visualization export
+- **297 FoR codes** mapped to fellowship activities
 - **DECRA, Future Fellowships, and Laureate Fellowships** included
 
 ## 🎯 How to Use
@@ -92,6 +92,15 @@ python scripts/static_analysis_optimized.py
 python scripts/sync_site_assets.py
 ```
 
+Refresh **fellowship** extracts from the ARC Data Portal (writes `data/fellowship/arc_fellowships.{csv,json}`), then rebuild viz and sync:
+
+```bash
+pip install requests
+python scripts/arc_fellowship_crawler.py   # default --year-from 2010
+python scripts/process_fellowship_data.py
+python scripts/sync_site_assets.py
+```
+
 **Lead CI citations (OpenAlex):** citations are computed for grants with **`funding_commencement_year >= 2010`** by default (matches the chart). Use a higher `--min-funding-year` to limit API calls. Build the enriched CSV (uses `outputs/cache/`; pass `--mailto your@email` for OpenAlex), then sync:
 
 ```bash
@@ -110,8 +119,8 @@ python scripts/server.py
 
 ## 📊 Data Sources
 
-- **ARC Discovery Projects**: Official Australian Research Council data (2010-2025)
-- **ARC Fellowship Schemes**: DECRA, Future Fellowships, and Laureate Fellowships data (2010-2025)
+- **ARC Discovery Projects**: Official Australian Research Council data (2010-2026)
+- **ARC Fellowship Schemes**: DECRA, Future Fellowships, Laureate and Industry Laureate data (2010-2026; refreshed from `dataportal.arc.gov.au`)
 - **Field of Research Codes**: Australian and New Zealand Standard Research Classification (ANZSRC)
 - **University Data**: Administering organization information from ARC grants database
 - **Gender Analysis**: Experimental data with web search, AI analysis, and manual review methodology
