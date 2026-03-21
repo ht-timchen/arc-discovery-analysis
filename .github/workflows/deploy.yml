@@ -57,6 +57,11 @@ jobs:
           if [ -f site/arc_fellowships_lead_citations.csv ]; then
             echo "Lead citations fellowship CSV present in site bundle."
           fi
+          if [ ! -f site/grant_summaries.json ]; then
+            echo "::error::site/grant_summaries.json missing after build — run generate_grant_summaries.py and ensure discovery/fellowship JSON exist in repo."
+            exit 1
+          fi
+          echo "grant_summaries.json present ($(wc -c < site/grant_summaries.json) bytes)."
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
