@@ -4,10 +4,15 @@ import json
 import sys
 import time
 from dataclasses import dataclass, asdict
+from pathlib import Path
 from typing import List, Dict, Any, Optional
 
 import requests
 from requests.adapters import HTTPAdapter, Retry
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+import paths as P
 
 API_BASE = "https://dataportal.arc.gov.au/NCGP/API/grants"
 
@@ -27,7 +32,7 @@ class Investigator:
         return " ".join(parts)
 
 @dataclass
-class GrantRecord:
+class FellowshipRecord:
     code: str
     scheme_name: str
     funding_commencement_year: Optional[int]
@@ -43,9 +48,9 @@ class GrantRecord:
     investigators_current: List[Investigator]
     investigators_announcement: List[Investigator]
 
-    def chief_investigators(self) -> List[Investigator]:
+    def fellowship_holders(self) -> List[Investigator]:
         source = self.investigators_current or self.investigators_announcement or []
-        return [inv for inv in source if (inv.role_code or "").upper() == "CI" or (inv.role_name or "").lower() == "chief investigator"]
+        return [inv for inv in source if inv.is_fellowship]
 
 
 def make_session() -> requests.Session:
@@ -59,7 +64,7 @@ def make_session() -> requests.Session:
     adapter = HTTPAdapter(max_retries=retries)
     session.mount("http://", adapter)
     session.mount("https://", adapter)
-    session.headers.update({"User-Agent": "arc-dp-crawler/1.0"})
+    session.headers.update({"User-Agent": "arc-fellowship-crawler/1.0"})
     return session
 
 
@@ -96,8 +101,8 @@ def parse_investigators(raw_list: Any) -> List[Investigator]:
     return out
 
 
-def parse_grant(attributes: Dict[str, Any]) -> GrantRecord:
-    return GrantRecord(
+def parse_fellowship(attributes: Dict[str, Any]) -> FellowshipRecord:
+    return FellowshipRecord(
         code=attributes.get("code"),
         scheme_name=attributes.get("scheme-name"),
         funding_commencement_year=attributes.get("funding-commencement-year"),
@@ -115,8 +120,16 @@ def parse_grant(attributes: Dict[str, Any]) -> GrantRecord:
     )
 
 
-def is_discovery_project(attributes: Dict[str, Any]) -> bool:
-    return (attributes.get("scheme-name") or "").strip().lower() == "discovery projects"
+def is_fellowship_scheme(attributes: Dict[str, Any]) -> bool:
+    scheme_name = (attributes.get("scheme-name") or "").strip().lower()
+    fellowship_schemes = [
+        "discovery early career researcher award",
+        "arc early career researcher award",
+        "arc future fellowship",
+        "arc laureate fellowship",
+        "laureate fellowship"
+    ]
+    return any(scheme in scheme_name for scheme in fellowship_schemes)
 
 
 def is_funded(attributes: Dict[str, Any]) -> bool:
@@ -139,82 +152,29 @@ def is_funded(attributes: Dict[str, Any]) -> bool:
     return False
 
 
-def load_existing_csv(csv_path: str) -> Dict[str, Dict[str, Any]]:
-    """Load existing CSV file and return a dict mapping grant codes to rows"""
-    existing = {}
-    try:
-        with open(csv_path, "r", newline="", encoding="utf-8") as f:
-            reader = csv.DictReader(f)
-            for row in reader:
-                code = row.get("code")
-                if code:
-                    existing[code] = row
-        print(f"Loaded {len(existing)} existing records from {csv_path}", file=sys.stderr)
-    except FileNotFoundError:
-        print(f"Existing CSV file not found: {csv_path}", file=sys.stderr)
-    except Exception as e:
-        print(f"Error loading existing CSV: {e}", file=sys.stderr)
-    return existing
-
-
-def load_existing_json(json_path: str) -> Dict[str, Dict[str, Any]]:
-    """Load existing JSON file and return a dict mapping grant codes to records"""
-    existing = {}
-    try:
-        with open(json_path, "r", encoding="utf-8") as f:
-            records = json.load(f)
-            for rec in records:
-                code = rec.get("code")
-                if code:
-                    existing[code] = rec
-        print(f"Loaded {len(existing)} existing records from {json_path}", file=sys.stderr)
-    except FileNotFoundError:
-        print(f"Existing JSON file not found: {json_path}", file=sys.stderr)
-    except Exception as e:
-        print(f"Error loading existing JSON: {e}", file=sys.stderr)
-    return existing
-
-
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(description="Crawl ARC Discovery Projects and extract Chief Investigators")
-    parser.add_argument("--out-csv", default="/Users/a1227750/arc_discovery_projects.csv", help="Output CSV path")
-    parser.add_argument("--out-json", default="/Users/a1227750/arc_discovery_projects.json", help="Output JSON path")
+    parser = argparse.ArgumentParser(description="Crawl ARC Fellowship schemes (DECRA, Future Fellow, Laureate) and extract data")
+    parser.add_argument("--out-csv", default=str(P.FELLOWSHIP_CSV), help="Output CSV path")
+    parser.add_argument("--out-json", default=str(P.FELLOWSHIP_JSON), help="Output JSON path")
     parser.add_argument("--max-pages", type=int, default=None, help="Limit number of pages to scan (for testing)")
     parser.add_argument("--page-size", type=int, default=1000, help="Page size for list endpoint")
     parser.add_argument("--sleep", type=float, default=0.1, help="Sleep seconds between detail requests to be polite")
     parser.add_argument("--year-from", type=int, default=None, help="Only include grants with funding-commencement-year >= this year")
     parser.add_argument("--year-to", type=int, default=None, help="Only include grants with funding-commencement-year <= this year")
-    parser.add_argument("--append", action="store_true", help="Append mode: merge with existing data, skipping duplicates")
-    parser.add_argument("--existing-csv", type=str, help="Path to existing CSV file for append mode")
-    parser.add_argument("--existing-json", type=str, help="Path to existing JSON file for append mode")
+    parser.add_argument("--scheme-filter", choices=["all", "decra", "future", "laureate"], default="all", 
+                       help="Filter by specific fellowship scheme")
 
     args = parser.parse_args()
-    
-    # If append mode, load existing data
-    existing_csv_data = {}
-    existing_json_data = {}
-    if args.append:
-        csv_path = args.existing_csv or "arc_discovery_projects_2010_2025_with_for.csv"
-        # Try to find corresponding JSON file if not specified
-        json_path = args.existing_json
-        if not json_path and csv_path:
-            # Try to infer JSON path from CSV path
-            json_path = csv_path.replace(".csv", ".json")
-            import os
-            if not os.path.exists(json_path):
-                json_path = None
-        existing_csv_data = load_existing_csv(csv_path)
-        if json_path:
-            existing_json_data = load_existing_json(json_path)
+    P.DATA_FELLOWSHIP.mkdir(parents=True, exist_ok=True)
 
     session = make_session()
 
-    print("Discovering Discovery Projects IDs...", file=sys.stderr)
+    print("Discovering Fellowship scheme IDs...", file=sys.stderr)
     page = 1
     total_pages_seen = None
-    dp_ids: List[str] = []
+    fellowship_ids: List[str] = []
 
     while True:
         if args.max_pages and page > args.max_pages:
@@ -228,7 +188,7 @@ def main():
             break
         for item in items:
             attributes = item.get("attributes", {})
-            if not is_discovery_project(attributes):
+            if not is_fellowship_scheme(attributes):
                 continue
             if args.year_from and (attributes.get("funding-commencement-year") or 0) < args.year_from:
                 continue
@@ -237,69 +197,56 @@ def main():
             if not is_funded(attributes):
                 # Detail endpoint has same amounts; skip unfunded
                 continue
-            dp_ids.append(item.get("id"))
+            
+            # Apply scheme-specific filtering if requested
+            if args.scheme_filter != "all":
+                scheme_name = (attributes.get("scheme-name") or "").strip().lower()
+                if args.scheme_filter == "decra" and "early career" not in scheme_name:
+                    continue
+                elif args.scheme_filter == "future" and "future" not in scheme_name:
+                    continue
+                elif args.scheme_filter == "laureate" and "laureate" not in scheme_name:
+                    continue
+            
+            fellowship_ids.append(item.get("id"))
         page += 1
         if total_pages_seen and page > total_pages_seen:
             break
 
-    print(f"Found {len(dp_ids)} Discovery Projects (funded) to fetch details", file=sys.stderr)
+    print(f"Found {len(fellowship_ids)} Fellowship grants (funded) to fetch details", file=sys.stderr)
 
-    results: List[GrantRecord] = []
-    for idx, gid in enumerate(dp_ids, start=1):
+    results: List[FellowshipRecord] = []
+    for idx, gid in enumerate(fellowship_ids, start=1):
         try:
             detail = fetch_detail(session, gid)
             attributes = (detail.get("data") or {}).get("attributes") or {}
-            grant = parse_grant(attributes)
-            results.append(grant)
+            fellowship = parse_fellowship(attributes)
+            results.append(fellowship)
             if args.sleep:
                 time.sleep(args.sleep)
             if idx % 50 == 0:
-                print(f"Fetched {idx}/{len(dp_ids)}", file=sys.stderr)
+                print(f"Fetched {idx}/{len(fellowship_ids)}", file=sys.stderr)
         except Exception as e:
             print(f"Error fetching {gid}: {e}", file=sys.stderr)
             continue
 
-    # If append mode, merge with existing data (skip duplicates by grant code)
-    if args.append:
-        new_codes = {rec.code for rec in results}
-        
-        # Merge existing JSON records (skip duplicates)
-        merged_json = []
-        for code, existing_rec in existing_json_data.items():
-            if code not in new_codes:
-                merged_json.append(existing_rec)
-        
-        # Add new records
-        for rec in results:
-            merged_json.append({
-                **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
-                "investigators_current": [asdict(inv) for inv in rec.investigators_current],
-                "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
-                "chief_investigators": [asdict(inv) for inv in rec.chief_investigators()],
-            })
-        
-        json_serializable = merged_json
-        skipped_count = len([c for c in existing_json_data.keys() if c in new_codes])
-        if skipped_count > 0:
-            print(f"Skipped {skipped_count} duplicate JSON records (already exist)", file=sys.stderr)
-    else:
-        # Write JSON
-        json_serializable = [
-            {
-                **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
-                "investigators_current": [asdict(inv) for inv in rec.investigators_current],
-                "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
-                "chief_investigators": [asdict(inv) for inv in rec.chief_investigators()],
-            }
-            for rec in results
-        ]
-    
+    # Write JSON
+    json_serializable = [
+        {
+            **{k: v for k, v in asdict(rec).items() if not k.startswith("investigators_")},
+            "investigators_current": [asdict(inv) for inv in rec.investigators_current],
+            "investigators_at_announcement": [asdict(inv) for inv in rec.investigators_announcement],
+            "fellowship_holders": [asdict(inv) for inv in rec.fellowship_holders()],
+        }
+        for rec in results
+    ]
     with open(args.out_json, "w", encoding="utf-8") as f:
         json.dump(json_serializable, f, ensure_ascii=False, indent=2)
     
     # Write CSV
     fieldnames = [
         "code",
+        "scheme_name",
         "funding_commencement_year",
         "grant_status",
         "funding_at_announcement",
@@ -310,30 +257,13 @@ def main():
         "for_primary_names",
         "for_all_codes",
         "for_all_names",
-        # Chief Investigators
-        "chief_investigators",
-        "chief_investigators_orcids",
+        # Fellowship holders
+        "fellowship_holders",
+        "fellowship_holders_orcids",
     ]
-    
-    # If append mode, merge with existing CSV data (skip duplicates by grant code)
-    records_to_write = []
-    if args.append:
-        new_codes = {rec.code for rec in results}
-        # Add existing CSV records that are not in new data
-        for code, existing_row in existing_csv_data.items():
-            if code not in new_codes:
-                records_to_write.append(existing_row)
-        skipped_csv_count = len([c for c in existing_csv_data.keys() if c in new_codes])
-        if skipped_csv_count > 0:
-            print(f"Skipped {skipped_csv_count} duplicate CSV records (already exist)", file=sys.stderr)
-    
     with open(args.out_csv, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        # Write existing records first (if append mode)
-        for row in records_to_write:
-            writer.writerow(row)
-        # Write new records
         for rec in results:
             # Flatten Field of Research
             for_list = rec.field_of_research
@@ -359,11 +289,12 @@ def main():
                 all_names = [for_list]
                 primary_names = [for_list]
             
-            cis = rec.chief_investigators()
-            ci_names = "; ".join([ci.full_name for ci in cis])
-            ci_orcids = "; ".join([ci.orcid.strip() for ci in cis if ci.orcid])
+            fellowship_holders = rec.fellowship_holders()
+            fh_names = "; ".join([fh.full_name for fh in fellowship_holders])
+            fh_orcids = "; ".join([fh.orcid.strip() for fh in fellowship_holders if fh.orcid])
             writer.writerow({
                 "code": rec.code,
+                "scheme_name": rec.scheme_name,
                 "funding_commencement_year": rec.funding_commencement_year,
                 "grant_status": rec.grant_status,
                 "funding_at_announcement": rec.funding_at_announcement,
@@ -373,8 +304,8 @@ def main():
                 "for_primary_names": "; ".join(primary_names),
                 "for_all_codes": "; ".join(all_codes),
                 "for_all_names": "; ".join(all_names),
-                "chief_investigators": ci_names,
-                "chief_investigators_orcids": ci_orcids,
+                "fellowship_holders": fh_names,
+                "fellowship_holders_orcids": fh_orcids,
             })
 
     print(f"Wrote {len(results)} records to {args.out_csv} and {args.out_json}", file=sys.stderr)

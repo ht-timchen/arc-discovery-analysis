@@ -4,9 +4,16 @@ Parse for_code_2008.txt into a hierarchical JSON file.
 This script handles the complex multi-column layout of the 2008 FoR codes file.
 """
 
-import re
 import json
+import re
+import sys
+from pathlib import Path
 from typing import Dict, List, Tuple
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def parse_for_code_2008(content: str) -> Dict:
     """
@@ -231,11 +238,13 @@ def main():
     print("Parsing FoR Code 2008 file...")
     
     try:
+        P.DATA_REFERENCE.mkdir(parents=True, exist_ok=True)
+        input_path = P.DATA_REFERENCE / "for_code_2008.txt"
         # Read the 2008 file
-        with open('for_code_2008.txt', 'r', encoding='utf-8') as f:
+        with open(input_path, 'r', encoding='utf-8') as f:
             content = f.read()
         
-        print(f"Read {len(content)} characters from for_code_2008.txt")
+        print(f"Read {len(content)} characters from {input_path.name}")
         
         # Parse the content
         hierarchical = parse_for_code_2008(content)
@@ -249,12 +258,14 @@ def main():
         # Create structured hierarchical JSON
         structured = create_hierarchical_json(hierarchical)
         
+        flat_out = P.DATA_REFERENCE / "for_codes_2008.json"
+        hier_out = P.DATA_REFERENCE / "for_codes_2008_hierarchical.json"
         # Save flat structure
-        with open('for_codes_2008.json', 'w', encoding='utf-8') as f:
+        with open(flat_out, 'w', encoding='utf-8') as f:
             json.dump(flat, f, indent=2, ensure_ascii=False)
         
         # Save hierarchical structure
-        with open('for_codes_2008_hierarchical.json', 'w', encoding='utf-8') as f:
+        with open(hier_out, 'w', encoding='utf-8') as f:
             json.dump(structured, f, indent=2, ensure_ascii=False)
         
         # Print summary

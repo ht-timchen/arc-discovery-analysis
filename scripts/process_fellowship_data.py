@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 import json
 import csv
+import sys
 from collections import defaultdict, Counter
+from pathlib import Path
 import re
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def load_fellowship_data(csv_file):
     """Load fellowship data from CSV and convert to visualization format"""
@@ -83,7 +90,7 @@ def create_visualization_data(universities, for_codes):
 def main():
     # Load fellowship data
     print("Loading fellowship data...")
-    universities, for_codes = load_fellowship_data('arc_fellowships.csv')
+    universities, for_codes = load_fellowship_data(str(P.FELLOWSHIP_CSV))
     
     print(f"Found {len(universities)} universities")
     print(f"Found {len(for_codes)} FoR codes")
@@ -93,10 +100,12 @@ def main():
     viz_data = create_visualization_data(universities, for_codes)
     
     # Save visualization data
-    with open('fellowship_visualization_data.json', 'w', encoding='utf-8') as f:
+    P.OUTPUTS_FELLOWSHIP.mkdir(parents=True, exist_ok=True)
+    out = P.FELLOWSHIP_VIZ_DATA_JSON
+    with open(out, 'w', encoding='utf-8') as f:
         json.dump(viz_data, f, ensure_ascii=False, indent=2)
     
-    print("Saved fellowship_visualization_data.json")
+    print(f"Saved {out}")
     
     # Print some statistics
     print("\nTop 10 universities by total fellowships:")

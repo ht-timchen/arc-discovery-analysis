@@ -4,20 +4,27 @@ Optimized Static ARC Analysis Generator
 Creates a smaller HTML file with essential data only
 """
 
-import pandas as pd
 import json
+import sys
 from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import pandas as pd
+
+import paths as P
 
 def load_and_process_data():
     """Load and process the ARC data"""
-    input_csv = "./arc_discovery_projects_2010_2026_with_for.csv"
-    input_json = "./arc_discovery_projects_2010_2026_with_for.json"
-    for_codes_file = "./for_codes_flat.json"
-    
-    if not Path(input_csv).exists():
+    input_csv = P.DISCOVERY_CSV_2026
+    input_json = P.DISCOVERY_JSON_2026
+    for_codes_file = P.FOR_CODES_FLAT
+
+    if not input_csv.exists():
         raise FileNotFoundError(f"Input CSV not found: {input_csv}")
-    
-    if not Path(for_codes_file).exists():
+
+    if not for_codes_file.exists():
         raise FileNotFoundError(f"FoR codes file not found: {for_codes_file}")
     
     # Load the comprehensive FoR codes from JSON
@@ -31,7 +38,7 @@ def load_and_process_data():
     
     # Load JSON data to get administering_organisation_announcement as fallback
     org_announcement_map = {}
-    if Path(input_json).exists():
+    if input_json.exists():
         try:
             with open(input_json, 'r', encoding='utf-8') as f:
                 json_data = json.load(f)
@@ -1083,7 +1090,8 @@ def main():
     )
     
     # Write the final HTML file
-    output_file = "arc_analysis_optimized.html"
+    P.SITE_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = P.SITE_OPTIMIZED_HTML
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(html_content)
     

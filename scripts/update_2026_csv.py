@@ -9,9 +9,14 @@ import csv
 import sys
 from pathlib import Path
 
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
+
 def main():
-    json_file = Path('arc_discovery_projects_2010_2026_with_for.json')
-    csv_file = Path('arc_discovery_projects_2010_2026_with_for.csv')
+    json_file = P.DISCOVERY_JSON_2026
+    csv_file = P.DISCOVERY_CSV_2026
     
     # Load JSON data
     print(f"Loading JSON file: {json_file}", file=sys.stderr)

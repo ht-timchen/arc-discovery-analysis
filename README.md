@@ -52,11 +52,38 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 
 ## 🏗️ Architecture
 
-- **Hub Structure**: Central index.html with navigation to four specialized analysis tools
-- **Static Sites**: Each analysis tool is a self-contained HTML file with embedded data
+- **Hub Structure**: Central `site/index.html` with navigation to specialized analysis tools (the GitHub Actions deploy replaces this file with the optimized Discovery analysis build, matching previous behaviour)
+- **Static Sites**: Each analysis tool is a self-contained HTML file under `site/`; some load JSON/CSV via `fetch()` from the same folder
 - **Client-side Processing**: All filtering, ranking, and visualization done in browser
 - **No Backend**: Fully self-contained for easy deployment
-- **GitHub Pages**: Hosted on GitHub's static hosting service
+- **GitHub Pages**: Workflow publishes the `site/` directory only
+
+## Repository layout
+
+| Path | Purpose |
+|------|---------|
+| `scripts/` | Python crawlers, FoR tooling, analysis, and `paths.py` (shared locations) |
+| `data/discovery/` | Discovery Projects CSV/JSON (canonical inputs) |
+| `data/fellowship/` | Fellowship CSV/JSON |
+| `data/reference/` | FoR taxonomy files (`for_codes_flat.json`, etc.) |
+| `data/derived/` | Enriched exports (e.g. university-attached Discovery data) |
+| `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, etc. |
+| `outputs/fellowship/` | `fellowship_visualization_data.json` |
+| `site/` | HTML dashboards and **copies** of assets needed for static hosting |
+
+Regenerate the main optimized page and refresh synced assets:
+
+```bash
+pip install -r requirements.txt
+python scripts/static_analysis_optimized.py
+python scripts/sync_site_assets.py
+```
+
+Preview locally (serves `site/` on port 8000):
+
+```bash
+python scripts/server.py
+```
 
 ## 📊 Data Sources
 

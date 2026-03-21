@@ -6,6 +6,13 @@ This script splits them into individual lines in for_code_format.txt.
 """
 
 import re
+import sys
+from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def reformat_for_codes(input_file: str, output_file: str):
     """
@@ -75,16 +82,18 @@ def reformat_for_codes(input_file: str, output_file: str):
         print(f"   - Input lines processed: {line_count}")
         print(f"   - Output code-name pairs: {output_count}")
         print(f"   - Output file: {output_file}")
+    return output_count
 
 def main():
     """
     Main function to run the reformatting process.
     """
-    input_file = "for_code.txt"
-    output_file = "for_code_format.txt"
+    P.DATA_REFERENCE.mkdir(parents=True, exist_ok=True)
+    input_file = str(P.FOR_CODE_TXT)
+    output_file = str(P.FOR_CODE_FORMAT_TXT)
     
     try:
-        reformat_for_codes(input_file, output_file)
+        output_count = reformat_for_codes(input_file, output_file)
         
         # Show a sample of the output
         print(f"\n📋 Sample of reformatted output:")
@@ -94,7 +103,8 @@ def main():
                     print(f"   {line.strip()}")
                 else:
                     break
-        print(f"   ... (and {output_count - 10} more lines)")
+        rest = max(0, output_count - 10)
+        print(f"   ... (and {rest} more lines)")
         
     except FileNotFoundError:
         print(f"❌ Error: {input_file} not found in current directory")

@@ -1,6 +1,13 @@
 import csv
 import json
+import sys
 from collections import defaultdict
+from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def extract_cis_and_affiliations():
     """
@@ -10,7 +17,8 @@ def extract_cis_and_affiliations():
     ci_data = []
     ci_affiliations = defaultdict(set)
     
-    with open('arc_discovery_projects_2010_2026_with_for.csv', 'r', encoding='utf-8') as file:
+    P.OUTPUTS_ANALYSIS.mkdir(parents=True, exist_ok=True)
+    with open(P.DISCOVERY_CSV_2026, 'r', encoding='utf-8') as file:
         reader = csv.DictReader(file)
         
         for row in reader:
@@ -62,12 +70,13 @@ def extract_cis_and_affiliations():
     }
     
     # Save to JSON file
-    with open('chief_investigators_data.json', 'w', encoding='utf-8') as json_file:
+    out_path = P.CHIEF_INVESTIGATORS_JSON
+    with open(out_path, 'w', encoding='utf-8') as json_file:
         json.dump(output, json_file, indent=2, ensure_ascii=False)
     
     print(f"Extracted {len(unique_cis)} unique Chief Investigators")
     print(f"Total CI entries: {len(ci_data)}")
-    print("Data saved to 'chief_investigators_data.json'")
+    print(f"Data saved to {out_path}")
     
     return output
 

@@ -7,6 +7,13 @@ This script creates both a flat JSON structure and a hierarchical JSON structure
 
 import json
 import re
+import sys
+from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def convert_to_json(input_file: str, output_flat: str, output_hierarchical: str):
     """
@@ -130,9 +137,10 @@ def main():
     """
     Main function to run the conversion process.
     """
-    input_file = "for_code_format.txt"
-    output_flat = "for_codes_flat.json"
-    output_hierarchical = "for_codes_hierarchical.json"
+    P.DATA_REFERENCE.mkdir(parents=True, exist_ok=True)
+    input_file = str(P.FOR_CODE_FORMAT_TXT)
+    output_flat = str(P.FOR_CODES_FLAT)
+    output_hierarchical = str(P.FOR_CODES_HIERARCHICAL)
     
     try:
         convert_to_json(input_file, output_flat, output_hierarchical)

@@ -1,9 +1,17 @@
 #!/usr/bin/env python3
 import csv
+import sys
+from pathlib import Path
+
 import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
+import pandas as pd
 from collections import defaultdict
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+
+import paths as P
 
 def count_chief_investigators(ci_string):
     """Count the number of chief investigators from a semicolon-separated string"""
@@ -21,7 +29,7 @@ def analyze_ci_data():
     
     print("Loading and analyzing Discovery Projects data...")
     
-    with open('arc_discovery_projects_2010_2026_with_for.csv', 'r', encoding='utf-8') as f:
+    with open(P.DISCOVERY_CSV_2026, 'r', encoding='utf-8') as f:
         reader = csv.DictReader(f)
         
         for row in reader:
@@ -110,9 +118,10 @@ def create_visualization():
                 f'{count}', ha='center', va='bottom', fontweight='bold')
     
     plt.tight_layout()
-    plt.savefig('ci_analysis_2010_2025.png', dpi=300, bbox_inches='tight')
-    plt.savefig('ci_analysis_2010_2025.pdf', bbox_inches='tight')
-    print(f"\nPlot saved as: ci_analysis_2010_2025.png and ci_analysis_2010_2025.pdf")
+    P.OUTPUTS_ANALYSIS.mkdir(parents=True, exist_ok=True)
+    plt.savefig(P.OUTPUTS_ANALYSIS / 'ci_analysis_2010_2025.png', dpi=300, bbox_inches='tight')
+    plt.savefig(P.OUTPUTS_ANALYSIS / 'ci_analysis_2010_2025.pdf', bbox_inches='tight')
+    print(f"\nPlot saved under {P.OUTPUTS_ANALYSIS}: ci_analysis_2010_2025.png and .pdf")
     
     # Create distribution analysis - show key years only for readability
     # Select representative years across the time period
@@ -156,9 +165,9 @@ def create_visualization():
             axes[row, col].set_visible(False)
         
         plt.tight_layout()
-        plt.savefig('ci_distribution_2010_2025.png', dpi=300, bbox_inches='tight')
-        plt.savefig('ci_distribution_2010_2025.pdf', bbox_inches='tight')
-        print(f"Distribution plot saved as: ci_distribution_2010_2025.png and ci_distribution_2010_2025.pdf")
+        plt.savefig(P.OUTPUTS_ANALYSIS / 'ci_distribution_2010_2025.png', dpi=300, bbox_inches='tight')
+        plt.savefig(P.OUTPUTS_ANALYSIS / 'ci_distribution_2010_2025.pdf', bbox_inches='tight')
+        print(f"Distribution plot saved under {P.OUTPUTS_ANALYSIS}: ci_distribution_2010_2025.png and .pdf")
     
     plt.show()
 

@@ -1,0 +1,16 @@
+# University Extraction Results (2023+ Discovery Projects)
+Total projects: 536
+Unique universities: 34
+
+Top 10 universities by project count:
+ 73 Monash University
+ 64 University of New South Wales
+ 57 University of Sydney
+ 56 University of Queensland
+ 51 University of Melbourne
+ 33 Australian National University
+ 18 University of Adelaide
+ 18 University of Technology Sydney
+ 16 University of Western Australia
+ 16 Queensland University of Technology
+
