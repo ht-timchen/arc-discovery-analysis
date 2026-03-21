@@ -30,6 +30,18 @@
         .detail-table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
         .detail-table .proj { max-width: 360px; }
         .muted { color: #868e96; font-size: 12px; }
+        .disclaimer {
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: #fff8e6;
+            border: 1px solid #f0d78c;
+            border-left: 4px solid #e6a100;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.55;
+            color: #4a4030;
+        }
+        .disclaimer strong { color: #2c2416; }
     </style>
 </head>
 <body>
@@ -82,6 +94,10 @@
                 <p class="detail-hint">Click a point on the chart to list grants for that year (top 50 by lead citations, current FoR filter).</p>
             </div>
         </section>
+
+        <aside class="disclaimer" role="note" aria-label="Disclaimer">
+            <strong>Disclaimer:</strong> This chart and the clickable grant table only include grants whose <strong>lead investigator has a resolvable OpenAlex author profile</strong> (matched via ORCID). Grants with no lead ORCID, or with no match in OpenAlex, are <strong>excluded</strong> from the yearly mean/median and from the detail table &mdash; they are not shown as zero citations. The underlying OpenAlex data and automated matching may contain <strong>errors or omissions</strong>. If you spot a mistake (wrong person linked, missing profile, or incorrect counts), please <a href="https://github.com/ht-timchen/arc-discovery-analysis/issues" target="_blank" rel="noopener noreferrer">open an issue on GitHub</a> or contact the maintainers so we can investigate and correct where possible.
+        </aside>
 
         <p class="footnote">
             <strong>Method:</strong> Citations are from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> author profiles, summing per-calendar-year <code>cited_by_count</code> entries up to and including the grant&rsquo;s funding commencement year (not identical to Google Scholar).
