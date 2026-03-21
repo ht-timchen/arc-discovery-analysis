@@ -60,9 +60,9 @@ A comprehensive analysis hub for Australian Research Council (ARC) research data
 
 ### GitHub Pages deploy
 
-The workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs on push to `main` / `master`: it builds `arc_analysis_optimized.html`, runs `scripts/sync_site_assets.py`, and deploys the **`site/`** folder to the `gh-pages` branch (same pattern as [peaceiris/actions-gh-pages](https://github.com/peaceiris/actions-gh-pages)).
+The workflow [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs on push to `main` / `master`: it builds `arc_analysis_optimized.html`, runs `scripts/sync_site_assets.py`, and publishes the **`site/`** folder with the official **GitHub Actions** Pages flow (`upload-pages-artifact` + `deploy-pages`).
 
-Enable **Settings → Pages → Build from branch `gh-pages` / root** (or your repo’s equivalent).
+**One-time setup:** In the GitHub repo go to **Settings → Pages → Build and deployment → Source** and choose **GitHub Actions** (not “Deploy from a branch”). If Source is still **main** `/` (root), GitHub serves `README.md` instead of the hub HTML — switch to **GitHub Actions** so the workflow output is what visitors see.
 
 The **lead citations** page loads CSVs from the same origin. Those files are copied into `site/` during the workflow **only if** the enriched inputs exist in the repository:
 
