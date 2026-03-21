@@ -79,7 +79,7 @@ Generate them with `scripts/lead_ci_citations_openalex.py`, run `sync_site_asset
 | `data/discovery/` | Discovery Projects CSV/JSON (canonical inputs) |
 | `data/fellowship/` | Fellowship CSV/JSON |
 | `data/reference/` | FoR taxonomy files (`for_codes_flat.json`, etc.) |
-| `data/derived/` | Enriched exports (e.g. university-attached Discovery data) |
+| `data/derived/` | Enriched exports (`grant_summaries.json` for lead-citations viz, university-attached data, etc.) |
 | `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, etc. |
 | `outputs/fellowship/` | `fellowship_visualization_data.json` |
 | `site/` | HTML dashboards and **copies** of assets needed for static hosting |
@@ -106,8 +106,11 @@ python scripts/sync_site_assets.py
 ```bash
 python scripts/lead_ci_citations_openalex.py --mailto your@email
 python scripts/lead_ci_citations_openalex.py --mailto your@email --input data/fellowship/arc_fellowships.csv --output data/fellowship/arc_fellowships_lead_citations.csv
+python scripts/generate_grant_summaries.py
 python scripts/sync_site_assets.py
 ```
+
+The **lead citations** page uses `grant_summaries.json` (grant code → truncated ARC summary) for the click-to-detail table; regenerate when discovery or fellowship JSON changes. GitHub Actions runs `generate_grant_summaries.py` before `sync_site_assets.py`.
 
 Use `--cache-only` to apply the existing cache without new API calls. Timeouts and rate limits are handled with retries (`--max-retries`, `--retry-backoff-base`; 429 responses honor `Retry-After` when sent). Open `site/lead_ci_citations_visualization.html` from the hub or directly (grant scheme picker: **DP**, **DECRA**, **other fellowships**, or all three; `scheme_name` in the fellowship CSV; chart uses **year ≥ 2010** by default, same as enrichment).
 

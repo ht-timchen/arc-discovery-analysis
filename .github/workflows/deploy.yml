@@ -36,6 +36,7 @@ jobs:
       - name: Build static site bundle
         run: |
           python scripts/static_analysis_optimized.py
+          python scripts/generate_grant_summaries.py
           python scripts/sync_site_assets.py
           touch site/.nojekyll
           echo "Hub: site/index.html | lead viz: site/lead_ci_citations_visualization.html"

@@ -19,6 +19,17 @@
         .footnote { font-size: 0.8rem; color: #6c757d; margin-top: 24px; line-height: 1.5; border-top: 1px solid #e9ecef; padding-top: 16px; }
         a.back { display: inline-block; margin-bottom: 16px; color: #007bff; text-decoration: none; font-size: 14px; }
         a.back:hover { text-decoration: underline; }
+        .grant-detail { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e9ecef; }
+        .grant-detail h2 { font-size: 1.1rem; font-weight: 600; margin: 0 0 10px; color: #343a40; }
+        .detail-hint { color: #6c757d; font-size: 0.9rem; margin: 0; }
+        .table-scroll { max-height: 420px; overflow: auto; border: 1px solid #dee2e6; border-radius: 6px; }
+        .detail-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .detail-table th { position: sticky; top: 0; background: #f1f3f5; text-align: left; padding: 8px 10px; border-bottom: 2px solid #dee2e6; }
+        .detail-table td { padding: 8px 10px; border-bottom: 1px solid #eee; vertical-align: top; }
+        .detail-table tr:nth-child(even) td { background: #fafbfc; }
+        .detail-table .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .detail-table .proj { max-width: 360px; }
+        .muted { color: #868e96; font-size: 12px; }
     </style>
 </head>
 <body>
@@ -65,6 +76,13 @@
             <canvas id="chart"></canvas>
         </div>
 
+        <section class="grant-detail" id="grant-detail" aria-live="polite">
+            <h2 id="detail-title">Grant details</h2>
+            <div id="detail-body">
+                <p class="detail-hint">Click a point on the chart to list grants for that year (top 50 by lead citations, current FoR filter).</p>
+            </div>
+        </section>
+
         <p class="footnote">
             <strong>Method:</strong> Citations are from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> author profiles, summing per-calendar-year <code>cited_by_count</code> entries up to and including the grant&rsquo;s funding commencement year (not identical to Google Scholar).
             Grants without a lead ORCID or with no OpenAlex match show as empty and are omitted from the mean/median for that year.
@@ -72,6 +90,7 @@
             FoR filter: a grant is included if <code>for_all_codes</code> contains a code consistent with the selection (6-digit exact; 4-digit prefix; 2-digit division).
             <br><strong>Discovery data:</strong> <code>arc_discovery_projects_2010_2026_with_for_lead_citations.csv</code> (lead = first chief investigator ORCID).
             <strong>Fellowship data:</strong> <code>arc_fellowships_lead_citations.csv</code> (lead = first fellowship holder ORCID). The chart groups fellowships using <code>scheme_name</code>: <strong>DECRA</strong> = <em>Discovery Early Career Researcher Award</em>; <strong>other fellowships</strong> = Future, Laureate, and Industry Laureate. Build both with <code>python scripts/lead_ci_citations_openalex.py</code> and <code>python scripts/sync_site_assets.py</code>.
+            <br><strong>Click a point</strong> on the line chart to show the top 50 grants for that year (matching the active series and FoR filters), sorted by lead citations. <strong>Project</strong> text is the ARC grant summary (truncated), from <code>grant_summaries.json</code> (<code>python scripts/generate_grant_summaries.py</code>).
         </p>
     </div>
 
@@ -80,13 +99,103 @@
         const MIN_FUNDING_YEAR = 2010;
         /** ARC CSV value for DECRA (Discovery Early Career Researcher Award). */
         const DECRA_SCHEME = 'Discovery Early Career Researcher Award';
+        const DETAIL_TOP_N = 50;
 
         let forCodes = null;
         let projectsDiscovery = [];
         let projectsFellowship = [];
         let chart = null;
-        /** Tooltip context: years + per-dataset citation arrays by year */
-        let chartMeta = { mode: 'mean', grantType: 'compare_all', years: [], seriesByYear: [] };
+        let grantSummaries = {};
+        /** Tooltip + click: years, per-dataset byYear maps, seriesKeys, FoR filter snapshot */
+        let chartMeta = {
+            mode: 'mean',
+            grantType: 'compare_all',
+            years: [],
+            seriesByYear: [],
+            seriesKeys: [],
+            filterFor: null,
+        };
+
+        function escapeHtml(s) {
+            return String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        function leadNameFromCell(cell) {
+            if (!cell) return '';
+            return cell.split(';')[0].trim();
+        }
+
+        function attachSummaries(list) {
+            list.forEach(p => {
+                p.projectSummary = grantSummaries[p.code] || '';
+            });
+        }
+
+        function clearDetailPanel() {
+            const title = document.getElementById('detail-title');
+            const body = document.getElementById('detail-body');
+            title.textContent = 'Grant details';
+            body.innerHTML = '<p class="detail-hint">Click a point on the chart to list grants for that year (top ' + DETAIL_TOP_N + ' by lead citations, current FoR filter).</p>';
+        }
+
+        function filterProjectsForDetail(year, seriesKey, d2, d4, d6) {
+            let pool;
+            if (seriesKey === 'dp') {
+                pool = projectsDiscovery;
+            } else if (seriesKey === 'decra') {
+                pool = projectsFellowship.filter(p => isDecraScheme(p.schemeName));
+            } else {
+                pool = projectsFellowship.filter(p => !isDecraScheme(p.schemeName));
+            }
+            return pool
+                .filter(p =>
+                    p.year === year &&
+                    p.year >= MIN_FUNDING_YEAR &&
+                    p.citations !== null &&
+                    p.citations !== undefined &&
+                    !Number.isNaN(p.citations) &&
+                    matchesForFilter(p.forAllCodes, d2, d4, d6)
+                )
+                .sort((a, b) => b.citations - a.citations)
+                .slice(0, DETAIL_TOP_N);
+        }
+
+        function renderDetailTable(rows, year, seriesKey) {
+            const labels = { dp: 'Discovery Projects', decra: 'DECRA', fellowship_other: 'Other fellowships' };
+            const title = document.getElementById('detail-title');
+            const body = document.getElementById('detail-body');
+            const label = labels[seriesKey] || seriesKey;
+            title.textContent = `Top ${rows.length} grant(s) — ${year} — ${label} (by citations)`;
+            if (!rows.length) {
+                body.innerHTML = '<p class="detail-hint">No grants with citation data for this year, series, and FoR filter.</p>';
+                return;
+            }
+            let html = '<div class="table-scroll"><table class="detail-table"><thead><tr><th>Lead CI</th><th>Citations</th><th>Year</th><th>Project</th></tr></thead><tbody>';
+            rows.forEach(p => {
+                const proj = (p.projectSummary || '').trim()
+                    ? `${escapeHtml(p.projectSummary)} <span class="muted">(${escapeHtml(p.code)})</span>`
+                    : escapeHtml(p.code || '');
+                html += `<tr><td>${escapeHtml(p.leadName)}</td><td class="num">${p.citations}</td><td>${p.year}</td><td class="proj">${proj}</td></tr>`;
+            });
+            html += '</tbody></table></div>';
+            body.innerHTML = html;
+        }
+
+        function handleDetailClick(evt, elements, c) {
+            if (!elements || !elements.length) return;
+            const el = elements[0];
+            const year = parseInt(c.data.labels[el.index], 10);
+            if (Number.isNaN(year)) return;
+            const sk = chartMeta.seriesKeys[el.datasetIndex];
+            const ff = chartMeta.filterFor;
+            if (!sk || !ff) return;
+            const rows = filterProjectsForDetail(year, sk, ff.d2, ff.d4, ff.d6);
+            renderDetailTable(rows, year, sk);
+        }
 
         function parseCSVLine(line) {
             const result = [];
@@ -209,6 +318,8 @@
             const mode = document.getElementById('stat-mode').value;
             const grantType = document.getElementById('grant-type').value;
 
+            clearDetailPanel();
+
             const hasFs = projectsFellowship.length > 0;
 
             const byDp = aggregateByYear(projectsDiscovery, d2, d4, d6);
@@ -216,6 +327,8 @@
             const fsOtherList = projectsFellowship.filter(p => !isDecraScheme(p.schemeName));
             const byFsDecra = aggregateByYear(fsDecraList, d2, d4, d6);
             const byFsOther = aggregateByYear(fsOtherList, d2, d4, d6);
+
+            const filterFor = { d2, d4, d6 };
 
             if (chart) chart.destroy();
             const ctx = document.getElementById('chart').getContext('2d');
@@ -226,6 +339,8 @@
             const chartOptions = (seriesByYear) => ({
                 responsive: true,
                 maintainAspectRatio: false,
+                interaction: { mode: 'nearest', intersect: false },
+                onClick: handleDetailClick,
                 plugins: {
                     legend: { display: true, position: 'top' },
                     tooltip: {
@@ -245,10 +360,12 @@
                 }
             });
 
-            function oneLineFilled(byYear, border, bg, label) {
+            function oneLineFilled(byYear, border, bg, label, seriesKey) {
                 const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
                 const values = valuesForYears(byYear, years, mode);
-                chartMeta = { mode, grantType, years, seriesByYear: [byYear] };
+                chartMeta = {
+                    mode, grantType, years, seriesByYear: [byYear], seriesKeys: [seriesKey], filterFor
+                };
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -268,7 +385,11 @@
             }
 
             function multiLine(years, datasets, seriesByYear) {
-                chartMeta = { mode, grantType, years, seriesByYear };
+                chartMeta = {
+                    mode, grantType, years, seriesByYear,
+                    seriesKeys: ['dp', 'decra', 'fellowship_other'],
+                    filterFor
+                };
                 chart = new Chart(ctx, {
                     type: 'line',
                     data: {
@@ -292,7 +413,8 @@
                     byDp,
                     '#007bff',
                     'rgba(0, 123, 255, 0.1)',
-                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`
+                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`,
+                    'dp'
                 );
                 return;
             }
@@ -302,7 +424,8 @@
                     byDp,
                     '#007bff',
                     'rgba(0, 123, 255, 0.1)',
-                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`
+                    `Discovery Projects (DP) — ${mlab} citations (OpenAlex)`,
+                    'dp'
                 );
                 return;
             }
@@ -312,7 +435,8 @@
                     byFsDecra,
                     '#198754',
                     'rgba(25, 135, 84, 0.12)',
-                    `DECRA — ${mlab} citations (OpenAlex)`
+                    `DECRA — ${mlab} citations (OpenAlex)`,
+                    'decra'
                 );
                 return;
             }
@@ -322,7 +446,8 @@
                     byFsOther,
                     '#fd7e14',
                     'rgba(253, 126, 20, 0.12)',
-                    `Other fellowships — ${mlab} citations (OpenAlex)`
+                    `Other fellowships — ${mlab} citations (OpenAlex)`,
+                    'fellowship_other'
                 );
                 return;
             }
@@ -358,6 +483,10 @@
             const fi = headers.indexOf('for_all_codes');
             const ci = headers.indexOf('lead_ci_citations_openalex_through_award_year');
             const si = headers.indexOf('scheme_name');
+            const codeIdx = headers.indexOf('code');
+            const leadIdx = headers.indexOf('fellowship_holders') >= 0
+                ? headers.indexOf('fellowship_holders')
+                : headers.indexOf('chief_investigators');
             if (yi === -1 || fi === -1 || ci === -1) {
                 throw new Error('CSV missing required columns (funding_commencement_year, for_all_codes, lead_ci_citations_openalex_through_award_year).');
             }
@@ -377,7 +506,18 @@
                     if (!Number.isNaN(n)) citations = n;
                 }
                 const schemeName = includeScheme && si >= 0 ? (values[si] || '').trim() : '';
-                out.push({ year, forAllCodes: values[fi] || '', citations, schemeName });
+                const code = codeIdx >= 0 ? (values[codeIdx] || '').trim() : '';
+                const leadCell = leadIdx >= 0 ? (values[leadIdx] || '') : '';
+                const leadName = leadNameFromCell(leadCell);
+                out.push({
+                    year,
+                    forAllCodes: values[fi] || '',
+                    citations,
+                    schemeName,
+                    code,
+                    leadName,
+                    projectSummary: '',
+                });
             }
             return out;
         }
@@ -404,6 +544,16 @@
                     projectsFellowship = [];
                     console.warn('Fellowship lead citations CSV not found; only Discovery mode available. Build with: python scripts/lead_ci_citations_openalex.py --cache-only --input data/fellowship/arc_fellowships.csv --output data/fellowship/arc_fellowships_lead_citations.csv');
                 }
+
+                const sumRes = await fetch('grant_summaries.json');
+                if (sumRes.ok) {
+                    grantSummaries = await sumRes.json();
+                } else {
+                    grantSummaries = {};
+                    console.warn('grant_summaries.json missing (HTTP ' + sumRes.status + '); Project column will show grant codes only. Run: python scripts/generate_grant_summaries.py && python scripts/sync_site_assets.py');
+                }
+                attachSummaries(projectsDiscovery);
+                attachSummaries(projectsFellowship);
 
                 const optCompare = document.getElementById('opt-compare-all');
                 const optDecra = document.getElementById('opt-decra');

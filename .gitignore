@@ -62,6 +62,7 @@ site/arc_fellowships_lead_citations.csv
 site/for_codes_flat.json
 site/visualization_data.json
 site/fellowship_visualization_data.json
+site/grant_summaries.json
 
 # Jupyter Notebook
 .ipynb_checkpoints

@@ -28,6 +28,7 @@ DISCOVERY_CSV_LEAD_CITATIONS = DATA_DISCOVERY / (
 DISCOVERY_JSON_2026 = DATA_DISCOVERY / "arc_discovery_projects_2010_2026_with_for.json"
 DISCOVERY_UNIVERSITIES_CSV = DATA_DERIVED / "arc_discovery_projects_universities.csv"
 DISCOVERY_UNIVERSITIES_JSON = DATA_DERIVED / "arc_discovery_projects_universities.json"
+GRANT_SUMMARIES_JSON = DATA_DERIVED / "grant_summaries.json"
 
 # Fellowship
 FELLOWSHIP_CSV = DATA_FELLOWSHIP / "arc_fellowships.csv"
@@ -55,3 +56,4 @@ SITE_FELLOWSHIP_VIZ_DATA = SITE_DIR / "fellowship_visualization_data.json"
 SITE_OPTIMIZED_HTML = SITE_DIR / "arc_analysis_optimized.html"
 SITE_LEAD_CITATIONS_CSV = SITE_DIR / "arc_discovery_projects_2010_2026_with_for_lead_citations.csv"
 SITE_FELLOWSHIP_LEAD_CITATIONS_CSV = SITE_DIR / "arc_fellowships_lead_citations.csv"
+SITE_GRANT_SUMMARIES_JSON = SITE_DIR / "grant_summaries.json"
