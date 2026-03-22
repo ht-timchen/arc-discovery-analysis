@@ -192,9 +192,13 @@
             }
             let html = '<div class="table-scroll"><table class="detail-table"><thead><tr><th>Lead CI</th><th>Citations</th><th>Year</th><th>Project</th></tr></thead><tbody>';
             rows.forEach(p => {
-                const proj = (p.projectSummary || '').trim()
+                const sum = (p.projectSummary || '').trim();
+                const forPrim = (p.forPrimaryName || '').trim();
+                const proj = sum
                     ? `${escapeHtml(p.projectSummary)} <span class="muted">(${escapeHtml(p.code)})</span>`
-                    : escapeHtml(p.code || '');
+                    : forPrim
+                        ? `${escapeHtml(forPrim)} <span class="muted">(${escapeHtml(p.code)})</span>`
+                        : escapeHtml(p.code || '');
                 html += `<tr><td>${escapeHtml(p.leadName)}</td><td class="num">${p.citations}</td><td>${p.year}</td><td class="proj">${proj}</td></tr>`;
             });
             html += '</tbody></table></div>';
@@ -500,6 +504,7 @@
             const ci = headers.indexOf('lead_ci_citations_openalex_through_award_year');
             const si = headers.indexOf('scheme_name');
             const codeIdx = headers.indexOf('code');
+            const fpri = headers.indexOf('for_primary_names');
             const leadIdx = headers.indexOf('fellowship_holders') >= 0
                 ? headers.indexOf('fellowship_holders')
                 : headers.indexOf('chief_investigators');
@@ -525,6 +530,7 @@
                 const code = codeIdx >= 0 ? (values[codeIdx] || '').trim() : '';
                 const leadCell = leadIdx >= 0 ? (values[leadIdx] || '') : '';
                 const leadName = leadNameFromCell(leadCell);
+                const forPrimaryName = fpri >= 0 ? leadNameFromCell(values[fpri] || '') : '';
                 out.push({
                     year,
                     forAllCodes: values[fi] || '',
@@ -532,6 +538,7 @@
                     schemeName,
                     code,
                     leadName,
+                    forPrimaryName,
                     projectSummary: '',
                 });
             }
@@ -566,7 +573,7 @@
                     grantSummaries = await sumRes.json();
                 } else {
                     grantSummaries = {};
-                    console.warn('grant_summaries.json missing (HTTP ' + sumRes.status + '); Project column will show grant codes only. Run: python scripts/generate_grant_summaries.py && python scripts/sync_site_assets.py');
+                    console.warn('grant_summaries.json missing (HTTP ' + sumRes.status + '); Project column will use primary FoR or grant code. Run: python scripts/generate_grant_summaries.py && python scripts/sync_site_assets.py');
                 }
                 attachSummaries(projectsDiscovery);
                 attachSummaries(projectsFellowship);
