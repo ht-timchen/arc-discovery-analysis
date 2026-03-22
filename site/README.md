@@ -11,3 +11,4 @@ python scripts/sync_site_assets.py
 - **Regenerate** the main analysis page: `python scripts/static_analysis_optimized.py`
 - **CI** runs the static generator and `sync_site_assets.py`. The hub stays as `index.html`; CI rankings are at `arc_analysis_optimized.html`.
 - **Lead citations:** after `lead_ci_citations_openalex.py`, run `python scripts/generate_grant_summaries.py`, then sync copies lead CSVs and `grant_summaries.json` into `site/` when present.
+- **GitHub Pages CDN:** `deploy.yml` substitutes `__GITHUB_RUN_NUMBER__` in `lead_ci_citations_visualization.html` and the hub link so each deploy fetches fresh JSON/CSV. Locally, the placeholder stays in the file (still works). If a cached old page persists in the browser, use a hard refresh or open the URL with any query string (e.g. `?v=1`).

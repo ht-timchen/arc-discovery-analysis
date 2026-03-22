@@ -38,6 +38,9 @@ jobs:
           python scripts/static_analysis_optimized.py
           python scripts/generate_grant_summaries.py
           python scripts/sync_site_assets.py
+          R="${GITHUB_RUN_NUMBER}"
+          sed -i.bak "s/__GITHUB_RUN_NUMBER__/${R}/g" site/lead_ci_citations_visualization.html site/index.html
+          rm -f site/lead_ci_citations_visualization.html.bak site/index.html.bak
           touch site/.nojekyll
           echo "Hub: site/index.html | lead viz: site/lead_ci_citations_visualization.html"
           ls -la site/index.html site/arc_analysis_optimized.html site/lead_ci_citations_visualization.html

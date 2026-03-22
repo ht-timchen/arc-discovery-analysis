@@ -3,6 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bare URLs are heavily cached on github.io; deploy workflow replaces __GITHUB_RUN_NUMBER__. -->
+    <meta http-equiv="Cache-Control" content="no-cache" />
     <title>Lead CI citations by award year (OpenAlex)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -548,19 +550,19 @@
         async function init() {
             const errEl = document.getElementById('err');
             try {
-                const forRes = await fetch('for_codes_flat.json');
+                const forRes = await fetch('for_codes_flat.json?v=__GITHUB_RUN_NUMBER__');
                 if (!forRes.ok) throw new Error(`FoR codes: HTTP ${forRes.status}`);
                 const forJson = await forRes.json();
                 forCodes = forJson.codes;
                 populate2Digit();
 
-                const csvRes = await fetch('arc_discovery_projects_2010_2026_with_for_lead_citations.csv');
+                const csvRes = await fetch('arc_discovery_projects_2010_2026_with_for_lead_citations.csv?v=__GITHUB_RUN_NUMBER__');
                 if (!csvRes.ok) {
                     throw new Error(`Discovery lead citations CSV missing (HTTP ${csvRes.status}). Run scripts/lead_ci_citations_openalex.py then scripts/sync_site_assets.py.`);
                 }
                 projectsDiscovery = parseLeadCitationCsv(await csvRes.text(), false);
 
-                const fsRes = await fetch('arc_fellowships_lead_citations.csv');
+                const fsRes = await fetch('arc_fellowships_lead_citations.csv?v=__GITHUB_RUN_NUMBER__');
                 if (fsRes.ok) {
                     projectsFellowship = parseLeadCitationCsv(await fsRes.text(), true);
                 } else {
@@ -568,7 +570,7 @@
                     console.warn('Fellowship lead citations CSV not found; only Discovery mode available. Build with: python scripts/lead_ci_citations_openalex.py --cache-only --input data/fellowship/arc_fellowships.csv --output data/fellowship/arc_fellowships_lead_citations.csv');
                 }
 
-                const sumRes = await fetch('grant_summaries.json');
+                const sumRes = await fetch('grant_summaries.json?v=__GITHUB_RUN_NUMBER__');
                 if (sumRes.ok) {
                     grantSummaries = await sumRes.json();
                 } else {
