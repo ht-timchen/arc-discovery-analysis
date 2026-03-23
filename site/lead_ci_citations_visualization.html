@@ -82,6 +82,13 @@
                 </select>
             </div>
             <div class="control-group">
+                <label for="show-uncertainty-band" style="min-height:1.2em;">&nbsp;</label>
+                <label style="display:flex;align-items:center;gap:8px;font-weight:400;cursor:pointer;">
+                    <input type="checkbox" id="show-uncertainty-band" checked />
+                    Show uncertainty band
+                </label>
+            </div>
+            <div class="control-group">
                 <label for="for-code-2digit">2-digit FoR</label>
                 <select id="for-code-2digit"></select>
             </div>
@@ -118,6 +125,7 @@
             <br><strong>Discovery data:</strong> <code>arc_discovery_projects_2010_2026_with_for_lead_citations.csv</code> (lead = first chief investigator ORCID).
             <strong>Fellowship data:</strong> <code>arc_fellowships_lead_citations.csv</code> (lead = first fellowship holder ORCID). The chart groups fellowships using <code>scheme_name</code>: <strong>DECRA</strong> = <em>Discovery Early Career Researcher Award</em>; <strong>other fellowships</strong> = Future, Laureate, and Industry Laureate. Build both with <code>python scripts/lead_ci_citations_openalex.py</code> and <code>python scripts/sync_site_assets.py</code>.
             <br><strong>Click a point</strong> on the line chart to show the top 50 grants for that year (matching the active series and FoR filters), sorted by lead citations. <strong>Project</strong> text is the ARC grant summary (truncated), from <code>grant_summaries.json</code> (<code>python scripts/generate_grant_summaries.py</code>).
+            <br><strong>Shaded band</strong> (optional): with <strong>Mean</strong> aggregation, the band is an approximate <strong>95% confidence interval for the mean</strong> (±1.96 × standard error). With <strong>Median</strong> aggregation, the band is the <strong>interquartile range (Q1–Q3)</strong> of grant-level citations in that year — descriptive spread, <em>not</em> a confidence interval for the median.
         </p>
     </div>
 
@@ -127,6 +135,8 @@
         /** ARC CSV value for DECRA (Discovery Early Career Researcher Award). */
         const DECRA_SCHEME = 'Discovery Early Career Researcher Award';
         const DETAIL_TOP_N = 50;
+        /** Approximate 95% CI for the mean (normal approx). */
+        const Z_CI_MEAN = 1.96;
 
         let forCodes = null;
         let projectsDiscovery = [];
@@ -218,10 +228,24 @@
 
         function handleDetailClick(evt, elements, c) {
             if (!elements || !elements.length) return;
-            const el = elements[0];
+            let el = elements.find(e => {
+                const ds = c.data.datasets[e.datasetIndex];
+                return ds && ds.seriesKey;
+            });
+            if (!el) {
+                el = elements.find(e => {
+                    const ds = c.data.datasets[e.datasetIndex];
+                    return ds && ds.logicalSeriesIndex !== undefined && ds.logicalSeriesIndex !== null;
+                });
+            }
+            if (!el) return;
+            const ds = c.data.datasets[el.datasetIndex];
             const year = parseInt(c.data.labels[el.index], 10);
             if (Number.isNaN(year)) return;
-            const sk = chartMeta.seriesKeys[el.datasetIndex];
+            let sk = ds.seriesKey;
+            if (!sk && chartMeta.seriesKeys && chartMeta.seriesKeys[ds.logicalSeriesIndex]) {
+                sk = chartMeta.seriesKeys[ds.logicalSeriesIndex];
+            }
             const ff = chartMeta.filterFor;
             if (!sk || !ff) return;
             const rows = filterProjectsForDetail(year, sk, ff.d2, ff.d4, ff.d6);
@@ -254,6 +278,92 @@
             const s = [...arr].sort((a, b) => a - b);
             const m = Math.floor(s.length / 2);
             return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+        }
+
+        function quantileSorted(sorted, p) {
+            if (!sorted.length) return null;
+            const pos = (sorted.length - 1) * p;
+            const base = Math.floor(pos);
+            const rest = pos - base;
+            const a = sorted[base];
+            const b = sorted[base + 1];
+            if (b === undefined) return a;
+            return a + rest * (b - a);
+        }
+
+        function bandBoundsForYear(arr, mode) {
+            if (!arr || arr.length < 2) return { low: null, high: null };
+            if (mode === 'median') {
+                const s = [...arr].sort((a, b) => a - b);
+                return { low: quantileSorted(s, 0.25), high: quantileSorted(s, 0.75) };
+            }
+            const n = arr.length;
+            const mean = arr.reduce((sum, v) => sum + v, 0) / n;
+            const varSum = arr.reduce((sum, x) => sum + (x - mean) ** 2, 0);
+            const s = Math.sqrt(varSum / (n - 1));
+            const half = Z_CI_MEAN * (s / Math.sqrt(n));
+            return { low: mean - half, high: mean + half };
+        }
+
+        function bandLowHighArrays(byYear, years, mode) {
+            const low = [];
+            const high = [];
+            years.forEach(y => {
+                const b = bandBoundsForYear(byYear[y], mode);
+                low.push(b.low);
+                high.push(b.high);
+            });
+            return { low, high };
+        }
+
+        function hexToRgbaBand(hex, alpha) {
+            const h = String(hex).replace('#', '');
+            if (h.length !== 6) return `rgba(0,0,0,${alpha})`;
+            const r = parseInt(h.slice(0, 2), 16);
+            const g = parseInt(h.slice(2, 4), 16);
+            const b = parseInt(h.slice(4, 6), 16);
+            return `rgba(${r},${g},${b},${alpha})`;
+        }
+
+        /**
+         * @param {number[]} lows
+         * @param {number[]} highs
+         * @param {string} fillColor
+         * @param {number} logicalIndex
+         * @param {number} orderBase
+         */
+        function makeBandPairDatasets(lows, highs, fillColor, logicalIndex, orderBase) {
+            return [
+                {
+                    label: '_band_low',
+                    data: lows,
+                    borderWidth: 0,
+                    pointRadius: 0,
+                    hitRadius: 10,
+                    fill: false,
+                    tension: 0.15,
+                    spanGaps: false,
+                    logicalSeriesIndex: logicalIndex,
+                    seriesKey: null,
+                    hideFromLegend: true,
+                    order: orderBase,
+                },
+                {
+                    label: '_band_high',
+                    data: highs,
+                    borderWidth: 0,
+                    pointRadius: 0,
+                    hitRadius: 10,
+                    fill: '-1',
+                    backgroundColor: fillColor,
+                    tension: 0.15,
+                    spanGaps: false,
+                    logicalSeriesIndex: logicalIndex,
+                    seriesKey: null,
+                    hideFromLegend: true,
+                    order: orderBase + 1,
+                },
+            ];
         }
 
         function matchesForFilter(forAllStr, d2, d4, d6) {
@@ -367,75 +477,162 @@
             const yTitle = mode === 'median' ? 'Median citations' : 'Mean citations';
             const mlab = mode === 'median' ? 'median' : 'mean';
 
-            const chartOptions = (seriesByYear) => ({
+            const chartOptions = () => ({
                 responsive: true,
                 maintainAspectRatio: false,
                 interaction: { mode: 'nearest', intersect: false },
                 onClick: handleDetailClick,
                 plugins: {
-                    legend: { display: true, position: 'top' },
+                    legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                            filter(item, chartData) {
+                                const ds = chartData.datasets[item.datasetIndex];
+                                return !ds.hideFromLegend;
+                            },
+                        },
+                    },
                     tooltip: {
                         callbacks: {
                             afterLabel: (c) => {
+                                const ds = c.chart.data.datasets[c.datasetIndex];
+                                const li = ds.logicalSeriesIndex;
+                                if (li === undefined || li === null) return '';
                                 const y = chartMeta.years[c.dataIndex];
-                                const by = seriesByYear[c.datasetIndex];
+                                const by = chartMeta.seriesByYear[li];
                                 const n = (by[y] || []).length;
-                                return `${n} grant(s) in year`;
-                            }
-                        }
-                    }
+                                let out = `${n} grant(s) in year`;
+                                const lows = chartMeta.bandLow && chartMeta.bandLow[li];
+                                const highs = chartMeta.bandHigh && chartMeta.bandHigh[li];
+                                if (lows && highs) {
+                                    const lo = lows[c.dataIndex];
+                                    const hi = highs[c.dataIndex];
+                                    if (lo != null && hi != null && Number.isFinite(lo) && Number.isFinite(hi)) {
+                                        const a = Math.round(lo);
+                                        const b = Math.round(hi);
+                                        out += chartMeta.mode === 'mean'
+                                            ? `\n95% CI (mean): ${a}\u2013${b}`
+                                            : `\nIQR (Q1\u2013Q3): ${a}\u2013${b}`;
+                                    }
+                                }
+                                return out;
+                            },
+                        },
+                    },
                 },
                 scales: {
                     x: { title: { display: true, text: 'Funding commencement year' } },
-                    y: { beginAtZero: true, title: { display: true, text: yTitle } }
-                }
+                    y: { beginAtZero: true, title: { display: true, text: yTitle } },
+                },
             });
 
             function oneLineFilled(byYear, border, bg, label, seriesKey) {
                 const years = Object.keys(byYear).map(Number).sort((a, b) => a - b);
                 const values = valuesForYears(byYear, years, mode);
+                const showBand = document.getElementById('show-uncertainty-band').checked;
+                const { low, high } = bandLowHighArrays(byYear, years, mode);
                 chartMeta = {
-                    mode, grantType, years, seriesByYear: [byYear], seriesKeys: [seriesKey], filterFor
+                    mode,
+                    grantType,
+                    years,
+                    seriesByYear: [byYear],
+                    seriesKeys: [seriesKey],
+                    filterFor,
+                    bandLow: [low],
+                    bandHigh: [high],
                 };
-                chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: years.map(String),
-                        datasets: [{
+                let datasets;
+                if (showBand) {
+                    const fillCol = hexToRgbaBand(border, 0.22);
+                    datasets = [
+                        ...makeBandPairDatasets(low, high, fillCol, 0, 0),
+                        {
                             label,
                             data: values,
                             borderColor: border,
                             backgroundColor: bg,
-                            fill: true,
-                            tension: 0.15,
-                            spanGaps: false,
-                        }]
-                    },
-                    options: chartOptions(chartMeta.seriesByYear),
-                });
-            }
-
-            function multiLine(years, datasets, seriesByYear) {
-                chartMeta = {
-                    mode, grantType, years, seriesByYear,
-                    seriesKeys: ['dp', 'decra', 'fellowship_other'],
-                    filterFor
-                };
-                chart = new Chart(ctx, {
-                    type: 'line',
-                    data: {
-                        labels: years.map(String),
-                        datasets: datasets.map(d => ({
-                            label: d.label,
-                            data: d.data,
-                            borderColor: d.borderColor,
-                            backgroundColor: d.bg || 'rgba(0,0,0,0.04)',
                             fill: false,
                             tension: 0.15,
                             spanGaps: false,
-                        }))
-                    },
-                    options: chartOptions(seriesByYear),
+                            seriesKey,
+                            logicalSeriesIndex: 0,
+                            hideFromLegend: false,
+                            order: 2,
+                        },
+                    ];
+                } else {
+                    datasets = [{
+                        label,
+                        data: values,
+                        borderColor: border,
+                        backgroundColor: bg,
+                        fill: true,
+                        tension: 0.15,
+                        spanGaps: false,
+                        seriesKey,
+                        logicalSeriesIndex: 0,
+                        hideFromLegend: false,
+                        order: 0,
+                    }];
+                }
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: years.map(String), datasets },
+                    options: chartOptions(),
+                });
+            }
+
+            function multiLine(years, seriesSpecs, seriesByYear) {
+                const showBand = document.getElementById('show-uncertainty-band').checked;
+                const bandLow = [];
+                const bandHigh = [];
+                const datasets = [];
+                seriesSpecs.forEach((spec, i) => {
+                    const vals = valuesForYears(spec.byYear, years, mode);
+                    const bh = bandLowHighArrays(spec.byYear, years, mode);
+                    bandLow.push(bh.low);
+                    bandHigh.push(bh.high);
+                    const orderBase = showBand ? i * 3 : i;
+                    if (showBand) {
+                        datasets.push(
+                            ...makeBandPairDatasets(
+                                bh.low,
+                                bh.high,
+                                hexToRgbaBand(spec.borderColor, 0.22),
+                                i,
+                                orderBase,
+                            ),
+                        );
+                    }
+                    datasets.push({
+                        label: spec.label,
+                        data: vals,
+                        borderColor: spec.borderColor,
+                        backgroundColor: spec.bg || 'rgba(0,0,0,0.04)',
+                        fill: false,
+                        tension: 0.15,
+                        spanGaps: false,
+                        seriesKey: spec.seriesKey,
+                        logicalSeriesIndex: i,
+                        hideFromLegend: false,
+                        order: showBand ? orderBase + 2 : orderBase,
+                    });
+                });
+                chartMeta = {
+                    mode,
+                    grantType,
+                    years,
+                    seriesByYear,
+                    seriesKeys: ['dp', 'decra', 'fellowship_other'],
+                    filterFor,
+                    bandLow,
+                    bandHigh,
+                };
+                chart = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: years.map(String), datasets },
+                    options: chartOptions(),
                 });
             }
 
@@ -485,26 +682,33 @@
 
             /* compare_all: DP + DECRA + other */
             const years = unionSortedYears(byDp, byFsDecra, byFsOther);
-            multiLine(years, [
-                {
-                    label: `DP — ${mlab}`,
-                    data: valuesForYears(byDp, years, mode),
-                    borderColor: '#007bff',
-                    bg: 'rgba(0, 123, 255, 0.06)',
-                },
-                {
-                    label: `DECRA — ${mlab}`,
-                    data: valuesForYears(byFsDecra, years, mode),
-                    borderColor: '#198754',
-                    bg: 'rgba(25, 135, 84, 0.06)',
-                },
-                {
-                    label: `Other fellowships — ${mlab}`,
-                    data: valuesForYears(byFsOther, years, mode),
-                    borderColor: '#fd7e14',
-                    bg: 'rgba(253, 126, 20, 0.06)',
-                },
-            ], [byDp, byFsDecra, byFsOther]);
+            multiLine(
+                years,
+                [
+                    {
+                        label: `DP — ${mlab}`,
+                        byYear: byDp,
+                        borderColor: '#007bff',
+                        bg: 'rgba(0, 123, 255, 0.06)',
+                        seriesKey: 'dp',
+                    },
+                    {
+                        label: `DECRA — ${mlab}`,
+                        byYear: byFsDecra,
+                        borderColor: '#198754',
+                        bg: 'rgba(25, 135, 84, 0.06)',
+                        seriesKey: 'decra',
+                    },
+                    {
+                        label: `Other fellowships — ${mlab}`,
+                        byYear: byFsOther,
+                        borderColor: '#fd7e14',
+                        bg: 'rgba(253, 126, 20, 0.06)',
+                        seriesKey: 'fellowship_other',
+                    },
+                ],
+                [byDp, byFsDecra, byFsOther],
+            );
         }
 
         function parseLeadCitationCsv(text, includeScheme) {
@@ -610,6 +814,7 @@
                 document.getElementById('for-code-6digit').addEventListener('change', buildChart);
                 document.getElementById('stat-mode').addEventListener('change', buildChart);
                 document.getElementById('grant-type').addEventListener('change', buildChart);
+                document.getElementById('show-uncertainty-band').addEventListener('change', buildChart);
 
                 buildChart();
             } catch (e) {
