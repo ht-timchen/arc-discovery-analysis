@@ -80,7 +80,7 @@ Generate them with `scripts/lead_ci_citations_openalex.py`, run `sync_site_asset
 | `data/fellowship/` | Fellowship CSV/JSON |
 | `data/reference/` | FoR taxonomy files (`for_codes_flat.json`, etc.) |
 | `data/derived/` | Enriched exports (`grant_summaries.json` for lead-citations viz, university-attached data, etc.) |
-| `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, etc. |
+| `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, `yearly_funding_stats.json`, etc. |
 | `outputs/fellowship/` | `fellowship_visualization_data.json` |
 | `site/` | HTML dashboards and **copies** of assets needed for static hosting |
 
@@ -89,6 +89,14 @@ Regenerate the main optimized page and refresh synced assets:
 ```bash
 pip install -r requirements.txt
 python scripts/static_analysis_optimized.py
+python scripts/build_yearly_funding_stats.py
+python scripts/sync_site_assets.py
+```
+
+Refresh **yearly awards / median funding** charts only:
+
+```bash
+python scripts/build_yearly_funding_stats.py
 python scripts/sync_site_assets.py
 ```
 

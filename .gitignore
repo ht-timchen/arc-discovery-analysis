@@ -63,6 +63,7 @@ site/for_codes_flat.json
 site/visualization_data.json
 site/fellowship_visualization_data.json
 site/grant_summaries.json
+site/yearly_funding_stats.json
 
 # Jupyter Notebook
 .ipynb_checkpoints
