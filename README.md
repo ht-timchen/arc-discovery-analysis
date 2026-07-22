@@ -78,6 +78,7 @@ Generate them with `scripts/lead_ci_citations_openalex.py`, run `sync_site_asset
 | `scripts/` | Python crawlers, FoR tooling, analysis, and `paths.py` (shared locations) |
 | `data/discovery/` | Discovery Projects CSV/JSON (canonical inputs) |
 | `data/fellowship/` | Fellowship CSV/JSON |
+| `data/linkage/` | Linkage Projects CSV (list crawl for yearly trends) |
 | `data/reference/` | FoR taxonomy files (`for_codes_flat.json`, etc.) |
 | `data/derived/` | Enriched exports (`grant_summaries.json` for lead-citations viz, university-attached data, etc.) |
 | `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, `yearly_funding_stats.json`, etc. |
@@ -96,6 +97,14 @@ python scripts/sync_site_assets.py
 Refresh **yearly awards / median funding** charts only:
 
 ```bash
+python scripts/build_yearly_funding_stats.py
+python scripts/sync_site_assets.py
+```
+
+Refresh **Linkage Projects** for the yearly trends page (list API only → `data/linkage/arc_linkage_projects.csv`), then rebuild:
+
+```bash
+python scripts/arc_lp_crawler.py   # default --year-from 2010
 python scripts/build_yearly_funding_stats.py
 python scripts/sync_site_assets.py
 ```

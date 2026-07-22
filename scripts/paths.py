@@ -8,6 +8,7 @@ REPO_ROOT = _SCRIPT_DIR.parent
 DATA = REPO_ROOT / "data"
 DATA_DISCOVERY = DATA / "discovery"
 DATA_FELLOWSHIP = DATA / "fellowship"
+DATA_LINKAGE = DATA / "linkage"
 DATA_REFERENCE = DATA / "reference"
 DATA_DERIVED = DATA / "derived"
 
@@ -34,6 +35,9 @@ GRANT_SUMMARIES_JSON = DATA_DERIVED / "grant_summaries.json"
 FELLOWSHIP_CSV = DATA_FELLOWSHIP / "arc_fellowships.csv"
 FELLOWSHIP_JSON = DATA_FELLOWSHIP / "arc_fellowships.json"
 FELLOWSHIP_CSV_LEAD_CITATIONS = DATA_FELLOWSHIP / "arc_fellowships_lead_citations.csv"
+
+# Linkage Projects
+LINKAGE_CSV = DATA_LINKAGE / "arc_linkage_projects.csv"
 
 # FoR reference
 FOR_CODES_JSON = DATA_REFERENCE / "for_codes.json"

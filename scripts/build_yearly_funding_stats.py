@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Aggregate yearly award counts and median funding_at_announcement for DP + fellowship schemes."""
+"""Aggregate yearly award counts and median funding_at_announcement for DP, LP, and fellowships."""
 
 from __future__ import annotations
 
@@ -110,8 +110,14 @@ def _series_arrays(
 def build_payload() -> Dict[str, Any]:
     dp_by_year = _amounts_by_year(P.DISCOVERY_CSV_2026)
     fel_by_scheme = _amounts_by_year_and_scheme(P.FELLOWSHIP_CSV)
+    lp_by_year: Dict[int, List[float]] = {}
+    if P.LINKAGE_CSV.is_file():
+        lp_by_year = _amounts_by_year(P.LINKAGE_CSV)
+    else:
+        print(f"Warning: missing linkage CSV (skipping LP series): {P.LINKAGE_CSV}", file=sys.stderr)
 
     all_years = set(dp_by_year)
+    all_years.update(lp_by_year)
     for scheme_years in fel_by_scheme.values():
         all_years.update(scheme_years)
     years = sorted(all_years)
@@ -127,6 +133,18 @@ def build_payload() -> Dict[str, Any]:
             "medians": medians,
         }
     )
+
+    if lp_by_year or P.LINKAGE_CSV.is_file():
+        counts, medians = _series_arrays(lp_by_year, years)
+        series.append(
+            {
+                "id": "lp",
+                "label": "Linkage Projects",
+                "kind": "linkage",
+                "counts": counts,
+                "medians": medians,
+            }
+        )
 
     known_schemes = {name for name, _, _ in SCHEME_ORDER}
     for scheme_name, series_id, label in SCHEME_ORDER:
