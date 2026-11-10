@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4VBD9JC28"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J4VBD9JC28');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Grants 2010–2026: Fewer, Bigger, More Concentrated</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400..700&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap">
+    <style>
+        /* Page chrome */
+        body {
+            margin: 0;
+            background: #E4DFD4;
+            color: #1B2A3A;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        .page { max-width: 1280px; margin: 0 auto; padding: 24px 16px 64px; }
+        .back-link { color: #2F6DB5; text-decoration: none; font-size: 0.95em; }
+        .back-link:hover { text-decoration: underline; }
+        .intro { margin: 16px 0 32px; }
+        .intro h1 { font-family: 'Source Serif 4', Georgia, serif; font-weight: 600; font-size: 2em; margin: 8px 0; }
+        .intro p { color: #4A5568; line-height: 1.5; margin: 0 0 8px; max-width: 760px; }
+        .slide-block { margin: 0 0 40px; }
+        .slide-frame {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(27, 42, 58, 0.15);
+        }
+        .notes { margin-top: 10px; font-size: 0.95em; color: #4A5568; }
+        .notes summary { cursor: pointer; color: #2F6DB5; font-weight: 600; }
+        .notes p { line-height: 1.6; max-width: 900px; margin: 8px 0 0; }
+        .footer { color: #4A5568; font-size: 0.9em; line-height: 1.5; border-top: 1px solid #CFC8B8; padding-top: 16px; }
+        .footer a { color: #2F6DB5; }
+
+        /* Slides: fixed 1920x1080 canvas, scaled to the frame width by the script below */
+        .slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1920px;
+            height: 1080px;
+            transform-origin: 0 0;
+            transform: scale(var(--slide-scale, 0.5));
+            overflow: hidden;
+        }
+        .slide, .slide * { box-sizing: border-box; margin: 0; }
+        .slide h1 { font-size: 96px; font-weight: 600; line-height: 1.1; }
+        .slide h2 { font-size: 64px; font-weight: 600; line-height: 1.15; }
+        .slide h3 { font-size: 44px; font-weight: 600; line-height: 1.2; }
+        .slide p { font-size: 32px; line-height: 1.4; }
+        .slide p, .slide h1, .slide h2, .slide h3, .slide svg { flex-shrink: 0; }
+        .slide svg { display: block; }
+    </style>
+</head>
+<body>
+    <main class="page">
+        <a class="back-link" href="index.html">&larr; ARC Research Hub</a>
+        <div class="intro">
+            <h1>ARC Grants 2010–2026: Fewer, Bigger, More Concentrated</h1>
+            <p>A 14-slide overview of Australian Research Council grants with funding commencing 2010&ndash;2026: overall funding, fields of research, and how grants are shared across the Go8, states and individual universities. Expand &ldquo;Notes&rdquo; under a slide for more detail.</p>
+            <p>Explore the underlying data interactively in <a class="back-link" href="arc_university_trends.html">Grants by University over Time</a> and <a class="back-link" href="arc_yearly_funding_trends.html">Yearly Awards &amp; Funding</a>.</p>
+        </div>
+
+<article class="slide-block" aria-label="Slide 1 of 14">
+<div class="slide-frame">
+<section id="slide-cover" class="slide" style="background:#1B2A3A;color:#F7F5F0;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;justify-content:center;gap:32px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#8FB4E3">Australian Research Council grants · 2010–2026</p>
+<h1 style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1;width:1400px">Fewer, bigger, more concentrated</h1>
+<p style="font-size:40px;line-height:1.35;color:#B8C4D0;width:1300px">What more than 20,000 funded grants say about how research money is shared across fields, states and universities</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#B8C4D0">ARC Research Hub · ht-timchen.github.io/arc-discovery-analysis · Data: ARC Data Portal</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>This deck walks from the big picture (how much money, how many grants) down to fields of research, then to universities: Go8 versus the rest, states, and individual institutions. It closes with the early-career pipeline and the caveats you need to read the numbers fairly. Everything here is based on funded grants listed in the ARC Data Portal with funding commencing 2010 to 2026.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 2 of 14">
+<div class="slide-frame">
+<section id="slide-data" class="slide" style="background:#ECE7DC;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">The data</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Every funded grant, 2010 to 2026</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:48px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">11,059</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Discovery Projects</h3>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Investigator-led research grants</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:48px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">5,382</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Fellowships</h3>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">DECRA (early career), Future and Laureate</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:48px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">3,741</p>
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Linkage Projects</h3>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Research with industry and other partners</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:48px;align-items:center">
+<p style="font-size:30px;line-height:1.4"><b>59</b> universities and institutes</p>
+<p style="font-size:30px;line-height:1.4"><b>Field of research</b> codes on every Discovery Project and fellowship</p>
+</div>
+<p style="font-size:30px;line-height:1.4;background:#F7F5F0;padding:20px 32px;border-radius:12px;border-left:6px solid #C2661A">Funded grants only: the data shows who won, not how many applied.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Source: ARC Data Portal, grants with funding commencing 2010–2026</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Three schemes. Discovery Projects are the ARC’s main investigator-led grants. Fellowships fund individual researchers at three career stages: DECRA for early career, Future Fellowships mid-career, Laureate Fellowships for senior leaders. Linkage Projects pair university researchers with industry or other partners. Discovery Projects and fellowships carry field of research codes; Linkage Projects in this dataset do not, so they appear only in the funding and industry-mix slides. Important: this is a list of winners. Without application numbers we cannot talk about success rates.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 3 of 14">
+<div class="slide-frame">
+<section id="slide-money" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Funding</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Fewer grants, each worth far more</h2>
+</div>
+<div style="display:flex;flex-direction:row;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Discovery Project awards per year · <b>−43%</b></p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">925 → 526</p>
+<svg aria-label="Line chart: Discovery Project awards per year fall from 925 in 2010 to 526 in 2026, with a low of 421 in 2024" width="760" height="220" viewBox="0 0 760 220"><line x1="0" y1="208" x2="760" y2="208" stroke="#CFC8B8" stroke-width="2"/><polyline points="12.0,26.7 58.0,25.5 104.0,55.3 150.0,64.5 196.0,70.2 242.0,77.7 288.0,83.5 334.0,84.5 380.0,91.6 426.0,79.8 472.0,78.6 518.0,89.8 564.0,92.9 610.0,114.3 656.0,125.5 702.0,102.9 748.0,104.9" fill="none" stroke="#2F6DB5" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="26.7" r="8" fill="#2F6DB5" stroke="#F7F5F0" stroke-width="3"/><circle cx="748" cy="104.9" r="8" fill="#2F6DB5" stroke="#F7F5F0" stroke-width="3"/></svg>
+<div style="width:760px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;color:#4A5568">2010</p>
+<p style="font-size:24px;color:#4A5568">2026</p>
+</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px">
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Median Discovery Project grant · <b>+118%</b></p>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">$310k → $676k</p>
+<svg aria-label="Line chart: median Discovery Project grant rises from $310k in 2010 to $676k in 2026, climbing fastest after 2023" width="760" height="220" viewBox="0 0 760 220"><line x1="0" y1="208" x2="760" y2="208" stroke="#CFC8B8" stroke-width="2"/><polyline points="12.0,121.2 58.0,123.6 104.0,124.0 150.0,115.6 196.0,107.2 242.0,107.8 288.0,104.9 334.0,105.2 380.0,101.0 426.0,95.3 472.0,88.7 518.0,91.4 564.0,86.2 610.0,83.4 656.0,62.5 702.0,35.9 748.0,18.7" fill="none" stroke="#C2661A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="121.2" r="8" fill="#C2661A" stroke="#F7F5F0" stroke-width="3"/><circle cx="748" cy="18.7" r="8" fill="#C2661A" stroke="#F7F5F0" stroke-width="3"/></svg>
+<div style="width:760px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;color:#4A5568">2010</p>
+<p style="font-size:24px;color:#4A5568">2026</p>
+</div>
+</div>
+</div>
+<p style="font-size:30px;line-height:1.4">Total Discovery Project funding held at <b>$220–285M a year</b> from 2012 to 2024, then rose to <b>$376M</b> in 2026.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Source: ARC Data Portal. Funding at announcement, nominal dollars (not adjusted for inflation). Both charts start at zero.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>The headline story. The number of Discovery Projects awarded each year has fallen from 925 in 2010 to 526 in 2026, with a low of 421 in 2024. Over the same period the median grant more than doubled, from about $310,000 to $676,000, with most of the rise after 2023. The total pot did not shrink: it sat between roughly $220 and $285 million a year from 2012 to 2024 and jumped to $342 million in 2025 and $376 million in 2026. So the money is being concentrated into fewer, larger projects. These are nominal dollars; part of the median rise is inflation. Because totals move this much, the rest of the deck compares shares rather than raw counts.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 4 of 14">
+<div class="slide-frame">
+<section id="slide-teams" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Teams</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Grants now go to bigger teams</h2>
+</div>
+<div style="display:grid;grid-template-columns:560px 1040px;gap:64px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">46% → 20%</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">of Discovery Projects have a single chief investigator, 2010 → 2026</p>
+<div style="height:28px"></div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">1.9 → 2.6</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">chief investigators per project, on average</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Share of Discovery Projects with one chief investigator</p>
+<div style="position:relative;width:1000px;height:380px">
+<svg aria-label="Line chart: share of Discovery Projects with one chief investigator, falling from 46% in 2010 to about 34% by 2018, then dropping from 27% in 2022 to 21% in 2023 and staying near 20%" width="1000" height="380" viewBox="0 0 1000 380"><line x1="0" y1="12" x2="1000" y2="12" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="190" x2="1000" y2="190" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="368" x2="1000" y2="368" stroke="#CFC8B8" stroke-width="2"/><polyline points="12.0,38.3 73.0,59.5 134.0,85.3 195.0,67.3 256.0,80.9 317.0,81.1 378.0,88.8 439.0,110.3 500.0,125.9 561.0,113.2 622.0,128.5 683.0,136.6 744.0,176.4 805.0,219.0 866.0,227.6 927.0,228.5 988.0,227.2" fill="none" stroke="#2F6DB5" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="12" cy="38.3" r="8" fill="#2F6DB5" stroke="#F7F5F0" stroke-width="3"/><circle cx="988" cy="227.2" r="8" fill="#2F6DB5" stroke="#F7F5F0" stroke-width="3"/></svg>
+<p style="position:absolute;left:0px;top:18px;width:120px;font-size:24px;color:#4A5568">50%</p>
+<p style="position:absolute;left:0px;top:196px;width:120px;font-size:24px;color:#4A5568">25%</p>
+<p style="position:absolute;left:0px;top:330px;width:120px;font-size:24px;color:#4A5568">0%</p>
+<p style="position:absolute;left:560px;top:40px;width:440px;font-size:24px;line-height:1.4;color:#1B2A3A;text-align:right">Sharpest fall: 27% in 2022 → 21% in 2023</p>
+</div>
+<div style="width:1000px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;color:#4A5568">2010</p>
+<p style="font-size:24px;color:#4A5568">2018</p>
+<p style="font-size:24px;color:#4A5568">2026</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Source: ARC Data Portal. Excludes 285 grants from 2010–14 with no investigators listed.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Alongside fewer, bigger grants, teams have grown. In 2010 almost half of Discovery Projects (46%) had a single chief investigator; by 2023 that had fallen to about one in five and it has stayed there. The average number of chief investigators per project rose from 1.86 to 2.60. The drop was gradual through the 2010s and then sharp between 2022 and 2023. The data does not tell us why; a rule or assessment change around that time is worth checking before attributing a cause. 285 early grants with no investigators recorded are excluded.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 5 of 14">
+<div class="slide-frame">
+<section id="slide-fields" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Fields of research</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Biology and engineering take a bigger slice</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;line-height:1.4;color:#4A5568;padding:0px 0px 8px 0px">Change in each field’s share of Discovery Projects, 2010–14 vs 2023–26 (percentage points) · right: share in each period</p>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Biological Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:338px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+5.2</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">18.3% → 23.5%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Engineering</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:260px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+4.0</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">19.4% → 23.4%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Environmental Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:59px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+0.9</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">3.5% → 4.4%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Psychology</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−0.9</p><div style="width:59px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">7.2% → 6.3%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Human Society</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−1.8</p><div style="width:117px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">9.7% → 8.0%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">History &amp; Archaeology</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−2.0</p><div style="width:130px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">5.7% → 3.7%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Mathematical Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−2.3</p><div style="width:150px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">8.5% → 6.2%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Economics</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−2.6</p><div style="width:169px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">5.3% → 2.7%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Earth Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−2.8</p><div style="width:182px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">6.7% → 4.0%</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Source: ARC Data Portal. A grant counts in every field it lists. 2008 field codes mapped to 2020 fields (approximate).</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Which fields are winning a bigger share of Discovery Projects? Biological sciences and engineering have each grown by four to five percentage points and together now appear on almost half of all projects. The losers are spread across maths, earth sciences, economics and the humanities and social sciences. Economics has roughly halved its share. These shifts were already under way before the 2023 change in field codes, so they are not an artefact of reclassification. A grant that lists several fields counts in each, so shares do not add to 100%.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 6 of 14">
+<div class="slide-frame">
+<section id="slide-ai" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Topics</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">AI goes from rare to routine</h2>
+</div>
+<div style="display:grid;grid-template-columns:900px 700px;gap:64px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Discovery Projects mentioning AI or machine learning</p>
+<div style="position:relative;width:900px;height:340px">
+<svg aria-label="Line chart: share of Discovery Project summaries mentioning AI or machine learning, under 1% from 2010 to 2019, rising from 2020 to 5.4% in 2025" width="900" height="340" viewBox="0 0 900 340"><line x1="0" y1="12" x2="900" y2="12" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="170" x2="900" y2="170" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="328" x2="900" y2="328" stroke="#CFC8B8" stroke-width="2"/><polyline points="12.0,316.6 70.4,322.3 128.8,307.7 187.2,313.6 245.6,298.0 304.0,280.5 362.4,303.1 420.8,311.3 479.2,283.7 537.6,295.8 596.0,192.3 654.4,144.6 712.8,193.4 771.2,140.7 829.6,102.8 888.0,43.0" fill="none" stroke="#2F6DB5" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="888.0" cy="43" r="8" fill="#2F6DB5" stroke="#F7F5F0" stroke-width="3"/></svg>
+<p style="position:absolute;left:0px;top:18px;width:120px;font-size:24px;color:#4A5568">6%</p>
+<p style="position:absolute;left:0px;top:176px;width:120px;font-size:24px;color:#4A5568">3%</p>
+<p style="position:absolute;left:0px;top:290px;width:120px;font-size:24px;color:#4A5568">0%</p>
+<p style="position:absolute;left:440px;top:30px;width:360px;font-size:24px;line-height:1.4;color:#1B2A3A;text-align:right">5.4% in 2025</p>
+</div>
+<div style="width:900px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;color:#4A5568">2010</p>
+<p style="font-size:24px;color:#4A5568">2018</p>
+<p style="font-size:24px;color:#4A5568">2025</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">1 in 20</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">2025 Discovery Projects mention AI or machine learning, up from about 1 in 500 in 2010. The rise starts in 2020.</p>
+<div style="height:24px"></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#ECE7DC;padding:32px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">COVID-19, briefly</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Mentioned in about 1.5% of 2022–24 projects, then falling to 0.6% in 2025–26.</p>
+</div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Source: ARC grant summaries. Keyword match on terms such as “machine learning” and “AI”; indicative only.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Grant summaries let us see topics, not just fields. Mentions of AI or machine learning were rare through the 2010s, under 1% of projects. From 2020 they climb, reaching 5.4% in 2025, about one project in twenty. COVID-19 shows how quickly a topic can appear and fade: absent before 2022, about 1.5% of projects in 2022 to 2024, then dropping back. This is a simple keyword search on ARC summaries, so treat the numbers as indicative.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 7 of 14">
+<div class="slide-frame">
+<section id="slide-go8" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Universities · Go8 vs the rest</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">The Go8 wins two in three grants, every year</h2>
+</div>
+<div style="display:grid;grid-template-columns:1040px 560px;gap:64px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:40px;height:6px;background:#2F6DB5;border-radius:3px"></div><p style="font-size:24px">Discovery Projects</p></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:40px;height:6px;background:#C2661A;border-radius:3px"></div><p style="font-size:24px">Fellowships</p></div>
+<p style="font-size:24px;color:#4A5568">· Go8 share of grants each year</p>
+</div>
+<div style="position:relative;width:1040px;height:360px">
+<svg aria-label="Line chart: Go8 share of Discovery Projects stays between 62% and 71% each year from 2010 to 2026; Go8 share of fellowships stays between 60% and 67%" width="1040" height="360" viewBox="0 0 1040 360"><line x1="0" y1="12" x2="1040" y2="12" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="180" x2="1040" y2="180" stroke="#E2DCCF" stroke-width="2"/><line x1="0" y1="348" x2="1040" y2="348" stroke="#CFC8B8" stroke-width="2"/><polyline points="12.0,124.6 75.5,126.6 139.0,129.3 202.5,137.3 266.0,129.6 329.5,126.2 393.0,137.3 456.5,123.2 520.0,142.0 583.5,129.6 647.0,132.6 710.5,145.1 774.0,138.0 837.5,125.6 901.0,136.0 964.5,144.4 1028.0,141.4" fill="none" stroke="#C2661A" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><polyline points="12.0,114.1 75.5,118.2 139.0,110.8 202.5,128.6 266.0,124.2 329.5,119.5 393.0,109.4 456.5,122.9 520.0,140.4 583.5,117.2 647.0,121.5 710.5,122.9 774.0,134.0 837.5,138.7 901.0,132.6 964.5,118.5 1028.0,118.5" fill="none" stroke="#2F6DB5" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/></svg>
+<p style="position:absolute;left:0px;top:18px;width:120px;font-size:24px;color:#4A5568">100%</p>
+<p style="position:absolute;left:0px;top:186px;width:120px;font-size:24px;color:#4A5568">50%</p>
+<p style="position:absolute;left:0px;top:310px;width:120px;font-size:24px;color:#4A5568">0%</p>
+<p style="position:absolute;left:320px;top:60px;width:300px;font-size:24px;color:#1B2A3A">Discovery Projects</p>
+<p style="position:absolute;left:620px;top:160px;width:220px;font-size:24px;color:#1B2A3A">Fellowships</p>
+</div>
+<div style="width:1040px;display:flex;flex-direction:row;justify-content:space-between">
+<p style="font-size:24px;color:#4A5568">2010</p>
+<p style="font-size:24px;color:#4A5568">2018</p>
+<p style="font-size:24px;color:#4A5568">2026</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">68% → 66%</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Go8 share of Discovery Projects, 2010–14 vs 2023–26</p>
+<div style="height:24px"></div>
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">65% → 63%</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Go8 share of fellowships</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Go8: ANU, Melbourne, Sydney, UNSW, Queensland, Monash, UWA, Adelaide. 2026 fellowships: DECRA round only.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>The Group of Eight research-intensive universities win about two thirds of ARC grants, and that share barely moves: 68% of Discovery Projects in 2010 to 2014, 66% in 2023 to 2026; 65% versus 63% for fellowships. Year-to-year wobbles are within a few points. So at the national level there is no dramatic shift away from or towards the Go8. The next slide shows that this stable total hides real movement underneath, by field.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 8 of 14">
+<div class="slide-frame">
+<section id="slide-go8fields" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Universities · Go8 vs the rest</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Underneath, the Go8’s strengths are shifting</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;line-height:1.4;color:#4A5568;padding:0px 0px 8px 0px">Change in the Go8’s share of Discovery Projects within each field, 2010–14 vs 2023–26 (percentage points) · right: Go8 share</p>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Agriculture, Vet &amp; Food</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:234px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+7.8</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">68% → 76%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Mathematical Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:231px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+7.7</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">73% → 80%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Biomedical &amp; Clinical</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:213px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+7.1</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">74% → 81%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Biological Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:123px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+4.1</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">73% → 77%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Physical Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−5.7</p><div style="width:171px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">76% → 70%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Engineering</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−7.6</p><div style="width:228px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">69% → 62%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Chemical Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−7.6</p><div style="width:228px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">72% → 64%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Earth Sciences</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−8.7</p><div style="width:261px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">66% → 58%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Language &amp; Culture</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−11.1</p><div style="width:333px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">56% → 45%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">History &amp; Archaeology</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−11.5</p><div style="width:345px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">67% → 56%</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Not shown: Law fell furthest (75% → 49%), but on only about 10 grants a year.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>The steady two-thirds hides a reshuffle. The Go8 is consolidating where research is expensive and lab-based or highly theoretical: biomedical and clinical sciences, agriculture, maths, biology, where its share has risen by four to eight points. Meanwhile other universities are winning a larger share in engineering, chemistry, physics and earth sciences, and especially in the humanities: history and language and culture are each down about 11 points for the Go8. Law dropped the most of all, from 75% to 49%, but on only about ten grants a year, so treat that as tentative.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 9 of 14">
+<div class="slide-frame">
+<section id="slide-states" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Universities · States</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Victoria has overtaken New South Wales</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px">
+<p style="font-size:24px;color:#4A5568">Share of Discovery Projects</p>
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:32px;height:18px;background:#A39D90;border-radius:3px"></div><p style="font-size:24px">2010–14</p></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:32px;height:18px;background:#2F6DB5;border-radius:3px"></div><p style="font-size:24px">2023–26</p></div>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">VIC</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:629px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:758px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">26.2% → 31.6%</p>
+<p style="width:200px;font-size:24px;font-weight:600">+5.4 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">NSW</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:804px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:737px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">33.5% → 30.7%</p>
+<p style="width:200px;font-size:24px;font-weight:600">−2.8 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">QLD</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:374px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:408px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">15.6% → 17.0%</p>
+<p style="width:200px;font-size:24px;font-weight:600">+1.4 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">ACT</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:252px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:182px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">10.5% → 7.6%</p>
+<p style="width:200px;font-size:24px;font-weight:600">−2.9 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">SA</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:142px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:158px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">5.9% → 6.6%</p>
+<p style="width:200px;font-size:24px;font-weight:600">+0.7 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">WA</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:161px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:115px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">6.7% → 4.8%</p>
+<p style="width:200px;font-size:24px;font-weight:600">−1.9 pts</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:120px;font-size:30px;font-weight:600">TAS</p>
+<div style="width:840px;display:flex;flex-direction:column;gap:4px"><div style="width:38px;height:18px;background:#A39D90;border-radius:0px 3px 3px 0px"></div><div style="width:29px;height:18px;background:#2F6DB5;border-radius:0px 3px 3px 0px"></div></div>
+<p style="width:300px;font-size:30px">1.6% → 1.2%</p>
+<p style="width:200px;font-size:24px;font-weight:600">−0.4 pts</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">State of the administering organisation (head office for multi-state bodies). NT: under 0.5% throughout.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>By state, the big story is Victoria. Its share of Discovery Projects rose from 26% to almost 32%, overtaking New South Wales, which slipped from 33.5% to 30.7%. Most of Victoria’s gain is Monash, with La Trobe, RMIT and Deakin also growing. The ACT’s fall is almost entirely the ANU. Western Australia has also lost ground. South Australia has held steady at around 6 to 7%. Fellowships show the same pattern in milder form.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 10 of 14">
+<div class="slide-frame">
+<section id="slide-unis" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Universities · Individual institutions</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Monash rises, ANU slips, tech universities climb</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<p style="font-size:24px;line-height:1.4;color:#4A5568;padding:0px 0px 8px 0px">Change in each university’s share of all Discovery Projects, 2010–14 vs 2023–26 (percentage points) · right: share in each period</p>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Monash</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:310px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+3.1</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">9.5% → 12.6%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">QUT</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:140px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+1.4</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">2.0% → 3.4%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">RMIT</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:140px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+1.4</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">1.5% → 3.0%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">UTS</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:100px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+1.0</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">2.1% → 3.1%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Flinders</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px"></div>
+<div style="width:400px;height:44px;display:flex;flex-direction:row;align-items:center;gap:12px;border-left:2px solid #8A8478"><div style="width:100px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">+1.0</p></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">0.9% → 1.9%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Macquarie</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−0.6</p><div style="width:60px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">3.5% → 2.9%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Newcastle</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−1.1</p><div style="width:110px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">2.7% → 1.6%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">Sydney</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−1.1</p><div style="width:110px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">10.3% → 9.2%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">UWA</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−1.6</p><div style="width:160px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">4.4% → 2.8%</p>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px">
+<p style="width:440px;font-size:30px;text-align:right">ANU</p>
+<div style="width:800px;display:flex;flex-direction:row">
+<div style="width:400px;height:44px;display:flex;flex-direction:row;justify-content:end;align-items:center;gap:12px"><p style="font-size:24px;font-weight:600">−2.7</p><div style="width:270px;height:28px;background:#C2661A;border-radius:4px 0px 0px 4px"></div></div>
+<div style="width:400px;height:44px;border-left:2px solid #8A8478"></div>
+</div>
+<p style="width:300px;font-size:24px;color:#4A5568">10.0% → 7.3%</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Biomedical &amp; clinical: the top three (Monash, Melbourne, Queensland) now win 66% of projects, up from 43% in 2010–14.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Individual universities. Monash is the standout: from 9.5% of all Discovery Projects to 12.6%, now the largest single winner, driven by biological, biomedical and economics research. The ANU has fallen from 10% to about 7%, with big drops in physics and earth sciences where it used to dominate. UWA has also lost ground. The technology universities, QUT, RMIT and UTS, have each grown their share by around one to one and a half points, mostly in engineering, chemistry and environmental science. Flinders doubled its share. Concentration is also rising in the life sciences: in biomedical and clinical sciences the top three universities now take two thirds of projects. These shifts were already visible before 2022.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 11 of 14">
+<div class="slide-frame">
+<section id="slide-industry" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:40px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Universities · Discovery vs industry</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Linkage Projects are a shrinking share</h2>
+</div>
+<div style="display:grid;grid-template-columns:560px 1040px;gap:64px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">30% → 24%</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">of funded Discovery and Linkage Projects were Linkage Projects (by number of projects), 2010–14 vs 2023–26</p>
+<div style="height:24px"></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:#ECE7DC;padding:32px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">A sharp dip</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Linkage awards fell to 87–137 a year in 2017–19, from 235 in 2016.</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;flex-direction:row;align-items:center;gap:32px;padding:0px 0px 8px 0px">
+<p style="font-size:24px;color:#4A5568">Linkage share of projects, 2023–26</p>
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:28px;height:18px;background:#2F6DB5;border-radius:3px"></div><p style="font-size:24px">Other</p></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:28px;height:18px;background:#C2661A;border-radius:3px"></div><p style="font-size:24px">Go8</p></div>
+</div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">RMIT</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:592px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">37%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">UTS</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:576px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">36%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">Griffith</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:480px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">30%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">La Trobe</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:480px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">30%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">QUT</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:432px;height:28px;background:#2F6DB5;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">27%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">Queensland (Go8)</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:416px;height:28px;background:#C2661A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">26%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;font-weight:600;text-align:right">All universities</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:384px;height:28px;background:#1B2A3A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">24%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">Melbourne (Go8)</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:336px;height:28px;background:#C2661A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">21%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">Adelaide (Go8)</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:192px;height:28px;background:#C2661A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">12%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">Monash (Go8)</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:176px;height:28px;background:#C2661A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">11%</p></div></div>
+<div style="display:flex;flex-direction:row;align-items:center;gap:24px"><p style="width:300px;font-size:30px;text-align:right">ANU (Go8)</p><div style="display:flex;flex-direction:row;align-items:center;gap:12px"><div style="width:176px;height:28px;background:#C2661A;border-radius:0px 4px 4px 0px"></div><p style="font-size:24px;font-weight:600">11%</p></div></div>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Linkage share = number of Linkage Projects ÷ number of Discovery + Linkage Projects (counts, not funding). Universities with at least 40 such projects in 2023–26.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Linkage Projects pair researchers with industry, government or community partners. As a share of the two main project schemes, Linkage has fallen from 30% to 24%, with a particularly sharp dip in 2017 to 2019. Universities differ a lot: the technology universities RMIT and UTS get over a third of their project grants through Linkage, while ANU, Monash and Adelaide get only 11 to 12%. In other words, the universities that dominate Discovery are the least industry-oriented, and vice versa. Adelaide’s low figure is worth watching now that it has merged with UniSA, which in 2010 to 2014 was the most Linkage-oriented university in the country.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 12 of 14">
+<div class="slide-frame">
+<section id="slide-pipeline" class="slide" style="background:#F7F5F0;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">People · The early-career pipeline</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Early-career fellows: who keeps them?</h2>
+</div>
+<div style="display:flex;flex-direction:row;align-items:stretch;gap:24px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#ECE7DC;padding:40px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">628</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">early-career (DECRA) fellows starting 2012–16 that we can track by ORCID</p>
+</div>
+<svg width="64" height="32" viewBox="0 0 64 32" aria-hidden="true" style="flex-shrink:0;align-self:center"><path d="M0 10h38V0l26 16-26 16V22H0z" fill="#8A8478"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#ECE7DC;padding:40px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1">196</p>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">later won a mid-career Future Fellowship (31%), typically 5½ years on</p>
+</div>
+<svg width="64" height="32" viewBox="0 0 64 32" aria-hidden="true" style="flex-shrink:0;align-self:center"><path d="M0 10h38V0l26 16-26 16V22H0z" fill="#8A8478"/></svg>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#1B2A3A;padding:40px;border-radius:16px">
+<p style="font-family:'Source Serif 4', Georgia, serif;font-size:96px;font-weight:600;line-height:1.1;color:#F7F5F0">60</p>
+<p style="font-size:30px;line-height:1.4;color:#B8C4D0">did so at a different university (31% of them)</p>
+</div>
+</div>
+<div style="display:flex;flex-direction:row;gap:64px">
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Net gain from these moves</h3>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">Deakin +6 · RMIT +4 · Macquarie +3 · QUT +3</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:8px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Net loss</h3>
+<p style="font-size:30px;line-height:1.4;color:#4A5568">UNSW −6 · Monash −4 · Queensland −3</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Small numbers: indicative only. Only 57–69% of fellows in those years have an ORCID, so 31% is a lower bound.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Following individual researchers via their ORCID IDs. Of the early-career DECRA fellows who started between 2012 and 2016 and have an ORCID, about three in ten went on to win a Future Fellowship, typically five and a half years later. Of those, three in ten won it at a different university. The movers tend to flow from large Go8 universities to growing ones: Deakin, RMIT, Macquarie and QUT gained the most, UNSW, Monash and Queensland lost the most. In short, the big research universities train early-career researchers and others recruit them. These are small numbers, 60 moves in total, and ORCID coverage is incomplete for those years, so read this as a pattern worth investigating rather than a firm result.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 13 of 14">
+<div class="slide-frame">
+<section id="slide-caveats" class="slide" style="background:#ECE7DC;color:#1B2A3A;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#2F6DB5">Reading the numbers</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15">Six things to keep in mind</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:32px">
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Winners, not applicants</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">The data lists funded grants only, so it shows who won, not success rates.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Field codes changed in 2023</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Older codes are mapped to the nearest new field. The mapping is approximate, so watch for steps at 2022–23.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Grants can count twice</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">A grant counts in every field it lists, so field shares add up to more than 100%.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">Names as recorded</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Each grant sits with its administering organisation. From 2024 some are listed under the merged Adelaide University.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">People via ORCID</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Tracking researchers relies on ORCID IDs, which are missing for many early records.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;background:#F7F5F0;padding:36px;border-radius:16px">
+<h3 style="font-size:30px;font-weight:600;line-height:1.3">2026 is partial</h3>
+<p style="font-size:24px;line-height:1.4;color:#4A5568">Only the 2026 DECRA round is in the portal so far; other 2026 fellowships are still to come.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#4A5568">Dollar figures are nominal. Linkage Projects carry no field codes in this dataset.</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>Before drawing conclusions, a few cautions. Most importantly, this is a list of winners: without application numbers we cannot say whether grants became harder to win, only how the winners are distributed. The field-of-research classification changed in 2023, and older codes have been mapped to the new ones approximately, so be careful with any jump that happens exactly at 2022 to 2023. Grants with several fields count in each. Organisations are as recorded by the ARC, including the new Adelaide University name on some grants from 2024. Researcher-level analysis depends on ORCID IDs. And 2026 is incomplete for fellowships.</p></details>
+</article>
+<article class="slide-block" aria-label="Slide 14 of 14">
+<div class="slide-frame">
+<section id="slide-takeaways" class="slide" style="background:#1B2A3A;color:#F7F5F0;font-family:'Inter', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:24px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:#8FB4E3">Takeaways</p>
+<h2 style="font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1.15;color:#F7F5F0">Four things that changed</h2>
+</div>
+<div style="display:flex;flex-direction:column;gap:36px">
+<div style="display:flex;flex-direction:row;gap:40px;align-items:start">
+<p style="width:80px;font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#8FB4E3">1</p>
+<p style="width:1500px;font-size:40px;line-height:1.35"><b>Fewer, bigger grants for bigger teams.</b> Awards down 43%, the median grant up 118%, solo projects down from 46% to 20%.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:40px;align-items:start">
+<p style="width:80px;font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#8FB4E3">2</p>
+<p style="width:1500px;font-size:40px;line-height:1.35"><b>Life sciences and engineering are growing;</b> maths, earth sciences, economics and the humanities are shrinking.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:40px;align-items:start">
+<p style="width:80px;font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#8FB4E3">3</p>
+<p style="width:1500px;font-size:40px;line-height:1.35"><b>The Go8 still wins two in three,</b> but Monash is pulling ahead, the ANU is slipping and technology universities are rising.</p>
+</div>
+<div style="display:flex;flex-direction:row;gap:40px;align-items:start">
+<p style="width:80px;font-family:'Source Serif 4', Georgia, serif;font-size:64px;font-weight:600;line-height:1;color:#8FB4E3">4</p>
+<p style="width:1500px;font-size:40px;line-height:1.35"><b>Victoria has overtaken New South Wales</b> as the largest winner of Discovery Projects.</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#B8C4D0">Explore the data yourself: ht-timchen.github.io/arc-discovery-analysis</p>
+</section>
+</div>
+<details class="notes"><summary>Notes</summary><p>To sum up. One: the ARC is funding fewer, larger projects run by bigger teams. Two: the balance of fields is shifting towards the life sciences and engineering. Three: the Go8’s overall share is stable, but within it Monash is rising and the ANU falling, and outside it the technology universities are gaining ground, especially in engineering and the physical sciences. Four: Victoria is now the largest state by Discovery Projects. The interactive pages on the ARC Research Hub let you filter all of this by field, scheme, state and university.</p></details>
+</article>
+
+        <p class="footer">Source: ARC Data Portal (Discovery Projects, Linkage Projects, Fellowships), funded grants only. Analysis: ARC Research Hub. Figures as of November 2026.</p>
+    </main>
+    <script>
+        // Scale each 1920x1080 slide to its frame's width.
+        const frames = document.querySelectorAll('.slide-frame');
+        const fit = (frame) => frame.style.setProperty('--slide-scale', frame.clientWidth / 1920);
+        const ro = new ResizeObserver((entries) => entries.forEach((e) => fit(e.target)));
+        frames.forEach((f) => { fit(f); ro.observe(f); });
+    </script>
+</body>
+</html>

@@ -102,6 +102,8 @@ python scripts/build_yearly_funding_stats.py
 python scripts/sync_site_assets.py
 ```
 
+**The story in 14 slides** (`site/arc_funding_story.html`) is a static page of the presentation deck (slides plus notes). Its figures are a snapshot (November 2026) computed from the data in this repo; it does not refresh when the data changes.
+
 Refresh **grants by university over time** (`site/arc_university_trends.html`; DP + fellowships per administering organisation and year, FoR-filterable). The build maps FoR 2008 divisions to their nearest FoR 2020 division (approximate crosswalk in the script, not the ABS concordance) so division-level trends span the 2022/23 classification change:
 
 ```bash
