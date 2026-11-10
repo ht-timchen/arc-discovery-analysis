@@ -81,7 +81,7 @@ Generate them with `scripts/lead_ci_citations_openalex.py`, run `sync_site_asset
 | `data/linkage/` | Linkage Projects CSV (list crawl for yearly trends) |
 | `data/reference/` | FoR taxonomy files (`for_codes_flat.json`, etc.) |
 | `data/derived/` | Enriched exports (`grant_summaries.json` for lead-citations viz, university-attached data, etc.) |
-| `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, `yearly_funding_stats.json`, etc. |
+| `outputs/analysis/` | Plots, `visualization_data.json`, `chief_investigators_data.json`, `yearly_funding_stats.json`, `university_trends_grants.json`, etc. |
 | `outputs/fellowship/` | `fellowship_visualization_data.json` |
 | `site/` | HTML dashboards and **copies** of assets needed for static hosting |
 
@@ -91,6 +91,7 @@ Regenerate the main optimized page and refresh synced assets:
 pip install -r requirements.txt
 python scripts/static_analysis_optimized.py
 python scripts/build_yearly_funding_stats.py
+python scripts/build_university_trends_data.py
 python scripts/sync_site_assets.py
 ```
 
@@ -98,6 +99,13 @@ Refresh **yearly awards / median funding** charts only:
 
 ```bash
 python scripts/build_yearly_funding_stats.py
+python scripts/sync_site_assets.py
+```
+
+Refresh **grants by university over time** (`site/arc_university_trends.html`; DP + fellowships per administering organisation and year, FoR-filterable). The build maps FoR 2008 divisions to their nearest FoR 2020 division (approximate crosswalk in the script, not the ABS concordance) so division-level trends span the 2022/23 classification change:
+
+```bash
+python scripts/build_university_trends_data.py
 python scripts/sync_site_assets.py
 ```
 

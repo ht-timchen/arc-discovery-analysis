@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-J4VBD9JC28"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-J4VBD9JC28');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ARC Grants by University over Time</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+        }
+        h1 {
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        .subtitle {
+            text-align: center;
+            color: #6c757d;
+            margin-bottom: 24px;
+            font-size: 1.1em;
+        }
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        .control {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 160px;
+        }
+        .control.wide { flex: 1 1 280px; }
+        .control label {
+            font-size: 0.8em;
+            font-weight: 600;
+            color: #495057;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        select, input[type="search"] {
+            padding: 6px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 0.95em;
+            background: #fff;
+            max-width: 100%;
+        }
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+        .uni-panel {
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+        .uni-panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .uni-panel-head button {
+            font-size: 0.8em;
+            padding: 3px 8px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            background: #f8f9fa;
+            cursor: pointer;
+            margin-left: 4px;
+        }
+        .uni-panel-head button:hover { background: #e9ecef; }
+        #uniSearch { margin-bottom: 8px; }
+        #uniList {
+            overflow-y: auto;
+            max-height: 460px;
+            font-size: 0.88em;
+        }
+        #uniList label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 3px 2px;
+            cursor: pointer;
+        }
+        #uniList label:hover { background: #f1f3f5; }
+        #uniList .swatch {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            flex: 0 0 10px;
+        }
+        #uniList .name { flex: 1; }
+        #uniList .count { color: #6c757d; font-variant-numeric: tabular-nums; }
+        .chart-container {
+            position: relative;
+            height: 520px;
+        }
+        #summary {
+            font-size: 0.9em;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+        .era-note {
+            font-size: 0.85em;
+            color: #856404;
+            background: #fff3cd;
+            border-radius: 4px;
+            padding: 6px 10px;
+            margin-bottom: 8px;
+            display: none;
+        }
+        .note {
+            color: #6c757d;
+            font-size: 0.85em;
+            line-height: 1.5;
+            margin-top: 24px;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 60px;
+            font-size: 1.1em;
+        }
+        .loading { color: #6c757d; }
+        .error { color: #dc3545; }
+        .back-link {
+            display: inline-block;
+            margin-bottom: 16px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.9em;
+        }
+        .back-link:hover { text-decoration: underline; }
+        @media (max-width: 900px) {
+            .layout { grid-template-columns: 1fr; }
+            #uniList { max-height: 220px; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .container { padding: 16px; }
+            h1 { font-size: 1.8em; }
+            .chart-container { height: 360px; }
+            .control { min-width: 0; flex: 1 1 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a class="back-link" href="index.html">&larr; ARC Research Hub</a>
+        <h1>Grants by University over Time</h1>
+        <div class="subtitle">
+            Discovery Projects and fellowships per administering organisation, by funding commencement year
+        </div>
+
+        <div id="status" class="loading">Loading data&hellip;</div>
+
+        <div id="app" style="display: none;">
+            <div class="controls">
+                <div class="control">
+                    <label for="scheme">Grant scheme</label>
+                    <select id="scheme"></select>
+                </div>
+                <div class="control">
+                    <label for="groupBy">Group by</label>
+                    <select id="groupBy">
+                        <option value="uni">University</option>
+                        <option value="go8">Go8 vs non-Go8</option>
+                        <option value="state">State / territory</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label for="mode">Measure</label>
+                    <select id="mode">
+                        <option value="year">Grants per year</option>
+                        <option value="cumulative">Cumulative grants</option>
+                        <option value="share">Share of matching grants (%)</option>
+                    </select>
+                </div>
+                <div class="control">
+                    <label for="yearFrom">From</label>
+                    <select id="yearFrom"></select>
+                </div>
+                <div class="control">
+                    <label for="yearTo">To</label>
+                    <select id="yearTo"></select>
+                </div>
+            </div>
+            <div class="controls">
+                <div class="control wide">
+                    <label for="for2">FoR division (2020, incl. mapped 2008)</label>
+                    <select id="for2"></select>
+                </div>
+                <div class="control wide">
+                    <label for="for4">FoR group (4-digit, exact)</label>
+                    <select id="for4"></select>
+                </div>
+                <div class="control wide">
+                    <label for="for6">FoR field (6-digit, exact)</label>
+                    <select id="for6"></select>
+                </div>
+            </div>
+
+            <div class="layout">
+                <div class="uni-panel">
+                    <div class="uni-panel-head">
+                        <span id="panelTitle">Universities</span>
+                        <span>
+                            <button id="topBtn" type="button" title="Reset to the default selection for the current filter">Top 8</button>
+                            <button id="clearBtn" type="button">Clear</button>
+                        </span>
+                    </div>
+                    <input id="uniSearch" type="search" placeholder="Search&hellip;" aria-label="Search universities">
+                    <div id="uniList"></div>
+                </div>
+                <div>
+                    <div id="summary"></div>
+                    <div id="eraNote" class="era-note"></div>
+                    <div class="chart-container">
+                        <canvas id="chart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <p class="note">
+                <strong>Counting:</strong> each grant counts once, under its administering organisation and
+                <code>funding_commencement_year</code>. A grant matches the FoR filter if any code in
+                <code>for_all_codes</code> matches, so a single grant can appear under several fields.
+                Universities are ranked by grant count for the current filters; the list shows the total for the selected years.
+                <br><strong>FoR classification change:</strong> ARC grants use ANZSRC FoR 2008 (divisions 01&ndash;22) up to
+                2022 and FoR 2020 (divisions 30&ndash;52) from 2023 (fellowships switch during 2022). The division filter maps each
+                FoR 2008 division to its nearest FoR 2020 division so that trends run across the change (e.g. 08&nbsp;&rarr;&nbsp;46
+                Information and Computing Sciences). 10&nbsp;Technology and 11&nbsp;Medical and Health Sciences are split
+                by 4-digit group (e.g. 1117 Public Health&nbsp;&rarr;&nbsp;42 Health Sciences). This is an approximate crosswalk,
+                not the official ABS field-level concordance, so a step at 2022/23 can be an artefact of reclassification.
+                45 Indigenous Studies has no FoR 2008 equivalent.
+                4- and 6-digit filters are exact codes and therefore cover only one classification era.
+                <br><strong>Share</strong> is the group&rsquo;s grants as a percentage of all grants matching the current scheme and FoR filter
+                in that year, which removes changes in overall scheme size (e.g. Discovery Projects fell from ~930 awards in 2011 to ~420&ndash;530 in 2023&ndash;26).
+                <br><strong>Organisations</strong> are shown as recorded by the ARC Data Portal. From 2024 some grants are recorded under
+                &ldquo;Adelaide University&rdquo; (the merger of The University of Adelaide and the University of South Australia) while others
+                still use the original names. <strong>Go8</strong> = ANU, Melbourne, Sydney, UNSW, UQ, Monash, UWA and The University of Adelaide;
+                &ldquo;Adelaide University&rdquo; is also counted as Go8, so a few 2024&ndash;26 grants that originated at UniSA fall into Go8.
+                <strong>State</strong> is the administering organisation&rsquo;s state or territory (head office for multi-state bodies such as
+                Australian Catholic University and CSIRO).
+                Linkage Projects are not included (no FoR codes in the current crawl).
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const TOP_N = 8;
+        const PALETTE = ['#4e79a7', '#f28e2b', '#e15759', '#76b7b2', '#59a14f',
+                         '#edc948', '#b07aa1', '#ff9da7', '#9c755f', '#bab0ac'];
+
+        let D = null;          // payload
+        let names = {};        // FoR code -> name
+        let chart = null;
+        let selected = new Set();
+        let autoSelect = true; // until the user ticks a box, follow the top N
+
+        const $ = (id) => document.getElementById(id);
+
+        function titleCase(s) {
+            if (!s || s !== s.toUpperCase()) return s;
+            return s.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())
+                .replace(/\b(And|Of|In|The|For)\b/g, (w) => w.toLowerCase());
+        }
+        function forLabel(code) {
+            return `${code}: ${titleCase(names[code] || '')}`;
+        }
+
+        /** Mirrors to_2020_division() in scripts/build_university_trends_data.py */
+        function to2020Division(code) {
+            const div = code.slice(0, 2);
+            if (+div >= 30) return div;
+            const map = D.for_2008_to_2020;
+            return map[code.slice(0, 4)] || map[div] || null;
+        }
+
+        function addOption(el, value, text) {
+            const o = document.createElement('option');
+            o.value = value;
+            o.textContent = text;
+            el.appendChild(o);
+        }
+
+        // ---------- FoR dropdowns (only codes present in the data) ----------
+        let presentCodes = new Set();
+
+        function populateFor2() {
+            const el = $('for2');
+            el.innerHTML = '';
+            addOption(el, '', 'All FoR');
+            const from2008 = {};
+            Object.entries(D.for_2008_to_2020).forEach(([k, v]) => {
+                if (k.length === 2) (from2008[v] = from2008[v] || []).push(k);
+                else (from2008[v] = from2008[v] || []).push(`part of ${k.slice(0, 2)}`);
+            });
+            const divs = new Set();
+            D.grants.forEach((g) => g[4] && g[4].split(';').forEach((d) => divs.add(d)));
+            [...divs].sort().forEach((d) => {
+                const src = [...new Set(from2008[d] || [])];
+                const suffix = src.length ? `  (2008: ${src.join(', ')})` : '  (2020 only)';
+                addOption(el, d, forLabel(d) + suffix);
+            });
+        }
+
+        function populateFor4() {
+            const d2 = $('for2').value;
+            const el = $('for4');
+            el.innerHTML = '';
+            addOption(el, '', d2 ? 'All groups in division' : 'Choose a division first');
+            if (d2) {
+                const groups = [...new Set([...presentCodes].map((c) => c.slice(0, 4)))]
+                    .filter((g) => to2020Division(g) === d2)
+                    .sort((a, b) => (+b.slice(0, 2) >= 30) - (+a.slice(0, 2) >= 30) || a.localeCompare(b));
+                groups.forEach((g) => {
+                    const era = +g.slice(0, 2) >= 30 ? 'FoR 2020' : 'FoR 2008';
+                    addOption(el, g, `${forLabel(g)}  [${era}]`);
+                });
+            }
+            populateFor6();
+        }
+
+        function populateFor6() {
+            const d4 = $('for4').value;
+            const el = $('for6');
+            el.innerHTML = '';
+            addOption(el, '', d4 ? 'All fields in group' : 'Choose a group first');
+            if (d4) {
+                [...presentCodes].filter((c) => c.length === 6 && c.startsWith(d4)).sort()
+                    .forEach((c) => addOption(el, c, forLabel(c)));
+            }
+        }
+
+        // ---------- Filtering & aggregation ----------
+        function grantMatches(g, f) {
+            if (f.scheme === 'fellowships' ? g[0] === 0 : (f.scheme !== 'all' && g[0] !== f.scheme)) return false;
+            if (g[2] < f.from || g[2] > f.to) return false;
+            if (f.d6) return g[3].split(';').includes(f.d6);
+            if (f.d4) return g[3].split(';').some((c) => c.startsWith(f.d4));
+            if (f.d2) return g[4].split(';').includes(f.d2);
+            return true;
+        }
+
+        function currentFilter() {
+            const s = $('scheme').value;
+            return {
+                scheme: (s === 'all' || s === 'fellowships') ? s : +s,
+                from: +$('yearFrom').value,
+                to: +$('yearTo').value,
+                d2: $('for2').value,
+                d4: $('for4').value,
+                d6: $('for6').value,
+            };
+        }
+
+        /** Line key for an organisation index under the current grouping. */
+        function groupKey(orgIdx) {
+            const g = $('groupBy').value;
+            if (g === 'go8') return D.org_meta[orgIdx].go8 ? 'Go8' : 'Non-Go8';
+            if (g === 'state') return D.org_meta[orgIdx].state;
+            return orgIdx;
+        }
+        const keyName = (key) => (typeof key === 'number' ? D.orgs[key] : key);
+
+        function aggregate(f) {
+            const years = [];
+            for (let y = f.from; y <= f.to; y++) years.push(y);
+            const byKey = new Map(); // line key -> counts array
+            const yearTotals = new Array(years.length).fill(0);
+            let total = 0;
+            D.grants.forEach((g) => {
+                if (!grantMatches(g, f)) return;
+                total++;
+                yearTotals[g[2] - f.from]++;
+                const key = groupKey(g[1]);
+                if (!byKey.has(key)) byKey.set(key, new Array(years.length).fill(0));
+                byKey.get(key)[g[2] - f.from]++;
+            });
+            const ranked = [...byKey.entries()]
+                .map(([org, counts]) => ({ org, counts, total: counts.reduce((a, b) => a + b, 0) }))
+                .sort((a, b) => b.total - a.total || String(keyName(a.org)).localeCompare(keyName(b.org)));
+            return { years, ranked, total, yearTotals };
+        }
+
+        // ---------- Rendering ----------
+        function colorForOrg(org) {
+            // Colour by position in the selection (rank order in auto mode, tick order otherwise).
+            const order = [...selected];
+            const i = order.indexOf(org);
+            return PALETTE[i % PALETTE.length];
+        }
+
+        function renderList(ranked) {
+            const q = $('uniSearch').value.trim().toLowerCase();
+            const list = $('uniList');
+            list.innerHTML = '';
+            // Keep ticked organisations listed (so they can be unticked) even with no grants under this filter.
+            const listed = new Set(ranked.map((r) => r.org));
+            const rows = ranked.concat([...selected].filter((o) => !listed.has(o)).map((org) => ({ org, total: 0 })));
+            rows.forEach(({ org, total }) => {
+                const name = keyName(org);
+                if (q && !name.toLowerCase().includes(q)) return;
+                const label = document.createElement('label');
+                const cb = document.createElement('input');
+                cb.type = 'checkbox';
+                cb.checked = selected.has(org);
+                cb.addEventListener('change', () => {
+                    autoSelect = false;
+                    if (cb.checked) selected.add(org); else selected.delete(org);
+                    update();
+                });
+                const sw = document.createElement('span');
+                sw.className = 'swatch';
+                sw.style.background = selected.has(org) ? colorForOrg(org) : 'transparent';
+                const nm = document.createElement('span');
+                nm.className = 'name';
+                nm.textContent = name;
+                const ct = document.createElement('span');
+                ct.className = 'count';
+                ct.textContent = total.toLocaleString('en-AU');
+                label.append(cb, sw, nm, ct);
+                list.appendChild(label);
+            });
+            if (!list.children.length) {
+                list.innerHTML = '<div style="color:#6c757d;padding:6px;">No matching universities.</div>';
+            }
+        }
+
+        function renderEraNote(f) {
+            const code = f.d6 || f.d4;
+            const el = $('eraNote');
+            if (!code) { el.style.display = 'none'; return; }
+            const is2020 = +code.slice(0, 2) >= 30;
+            el.textContent = is2020
+                ? `${code} is a FoR 2020 code: it only appears on grants from 2022/23 onward. Use the division filter for a trend across the classification change.`
+                : `${code} is a FoR 2008 code: it only appears on grants up to 2022. Use the division filter for a trend across the classification change.`;
+            el.style.display = 'block';
+        }
+
+        function update() {
+            const f = currentFilter();
+            const { years, ranked, total, yearTotals } = aggregate(f);
+            const byUni = $('groupBy').value === 'uni';
+            if (autoSelect) {
+                // Universities: top N. Go8 / states: every group except organisations with no recorded name/state.
+                selected = new Set(byUni ? ranked.slice(0, TOP_N).map((r) => r.org)
+                                         : ranked.map((r) => r.org).filter((k) => k !== 'Unknown'));
+            }
+
+            const mode = $('mode').value;
+            const rankedByOrg = new Map(ranked.map((r) => [r.org, r]));
+            const datasets = [...selected].map((org, i) => {
+                const counts = rankedByOrg.has(org) ? rankedByOrg.get(org).counts : new Array(years.length).fill(0);
+                let run = 0;
+                let data = counts;
+                if (mode === 'cumulative') data = counts.map((c) => (run += c));
+                if (mode === 'share') data = counts.map((c, j) => (yearTotals[j] ? +(100 * c / yearTotals[j]).toFixed(1) : null));
+                const color = colorForOrg(org);
+                return {
+                    label: keyName(org),
+                    data,
+                    borderColor: color,
+                    backgroundColor: color,
+                    borderDash: i >= PALETTE.length ? [6, 4] : [],
+                    borderWidth: 2,
+                    pointRadius: 2.5,
+                    pointHoverRadius: 5,
+                    tension: 0.15,
+                };
+            });
+
+            chart.data.labels = years;
+            chart.data.datasets = datasets;
+            chart.options.scales.y.title.text = {
+                year: 'Grants per year',
+                cumulative: `Cumulative grants since ${f.from}`,
+                share: '% of matching grants that year',
+            }[mode];
+            chart.options.scales.y.ticks.callback = (v) => (mode === 'share' ? `${v}%` : v);
+            chart.update();
+
+            const unit = { uni: 'organisations', go8: 'groups', state: 'states/territories' }[$('groupBy').value];
+            $('panelTitle').textContent = { uni: 'Universities', go8: 'Groups', state: 'States' }[$('groupBy').value];
+            $('topBtn').textContent = byUni ? `Top ${TOP_N}` : 'All';
+            $('summary').textContent =
+                `${total.toLocaleString('en-AU')} grants match (${f.from}–${f.to}) across ${ranked.length} ${unit}; ` +
+                `${selected.size} shown.`;
+            renderEraNote(f);
+            renderList(ranked);
+        }
+
+        function initChart() {
+            chart = new Chart($('chart'), {
+                type: 'line',
+                data: { labels: [], datasets: [] },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, usePointStyle: true, padding: 14 },
+                        },
+                        tooltip: {
+                            itemSort: (a, b) => b.parsed.y - a.parsed.y,
+                            callbacks: {
+                                label: (ctx) => `${ctx.dataset.label}: ${ctx.parsed.y}${$('mode').value === 'share' ? '%' : ''}`,
+                            },
+                        },
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Funding commencement year' },
+                            grid: { color: 'rgba(0,0,0,0.04)' },
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Grants per year' },
+                            ticks: { precision: 0 },
+                            grid: { color: 'rgba(0,0,0,0.06)' },
+                        },
+                    },
+                },
+            });
+        }
+
+        async function main() {
+            const status = $('status');
+            try {
+                const [dataRes, forRes] = await Promise.all([
+                    fetch('university_trends_grants.json?v=__GITHUB_RUN_NUMBER__'),
+                    fetch('for_codes_flat.json?v=__GITHUB_RUN_NUMBER__'),
+                ]);
+                if (!dataRes.ok) throw new Error(`Failed to load university_trends_grants.json (${dataRes.status})`);
+                if (!forRes.ok) throw new Error(`Failed to load for_codes_flat.json (${forRes.status})`);
+                D = await dataRes.json();
+                names = (await forRes.json()).codes || {};
+                D.grants.forEach((g) => g[3] && g[3].split(';').forEach((c) => presentCodes.add(c)));
+
+                const scheme = $('scheme');
+                addOption(scheme, 'all', 'All (DP + fellowships)');
+                D.schemes.forEach((s, i) => {
+                    if (i === 1) addOption(scheme, 'fellowships', 'All fellowships');
+                    addOption(scheme, String(i), s.label);
+                });
+                scheme.value = '0';
+
+                const allYears = D.grants.map((g) => g[2]);
+                const minY = Math.min(...allYears), maxY = Math.max(...allYears);
+                for (let y = minY; y <= maxY; y++) {
+                    addOption($('yearFrom'), y, y);
+                    addOption($('yearTo'), y, y);
+                }
+                $('yearFrom').value = minY;
+                $('yearTo').value = maxY;
+
+                populateFor2();
+                populateFor4();
+
+                ['scheme', 'mode', 'for6'].forEach((id) => $(id).addEventListener('change', update));
+                $('groupBy').addEventListener('change', () => { autoSelect = true; $('uniSearch').value = ''; update(); });
+                $('for2').addEventListener('change', () => { populateFor4(); update(); });
+                $('for4').addEventListener('change', () => { populateFor6(); update(); });
+                $('yearFrom').addEventListener('change', () => {
+                    if (+$('yearFrom').value > +$('yearTo').value) $('yearTo').value = $('yearFrom').value;
+                    update();
+                });
+                $('yearTo').addEventListener('change', () => {
+                    if (+$('yearTo').value < +$('yearFrom').value) $('yearFrom').value = $('yearTo').value;
+                    update();
+                });
+                $('uniSearch').addEventListener('input', () => renderList(aggregate(currentFilter()).ranked));
+                $('topBtn').addEventListener('click', () => { autoSelect = true; update(); });
+                $('clearBtn').addEventListener('click', () => { autoSelect = false; selected.clear(); update(); });
+
+                status.style.display = 'none';
+                $('app').style.display = 'block';
+                initChart();
+                update();
+            } catch (err) {
+                status.className = 'error';
+                status.textContent = err.message || String(err);
+            }
+        }
+
+        main();
+    </script>
+</body>
+</html>

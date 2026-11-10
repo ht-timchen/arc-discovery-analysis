@@ -52,6 +52,7 @@ FELLOWSHIP_VIZ_DATA_JSON = OUTPUTS_FELLOWSHIP / "fellowship_visualization_data.j
 CHIEF_INVESTIGATORS_JSON = OUTPUTS_ANALYSIS / "chief_investigators_data.json"
 UNIVERSITY_EXTRACTION_SUMMARY = OUTPUTS_ANALYSIS / "university_extraction_summary.txt"
 YEARLY_FUNDING_STATS_JSON = OUTPUTS_ANALYSIS / "yearly_funding_stats.json"
+UNIVERSITY_TRENDS_JSON = OUTPUTS_ANALYSIS / "university_trends_grants.json"
 
 # Site bundle (flat names for fetch())
 SITE_DISCOVERY_CSV = SITE_DIR / "arc_discovery_projects_2010_2026_with_for.csv"
@@ -63,3 +64,4 @@ SITE_LEAD_CITATIONS_CSV = SITE_DIR / "arc_discovery_projects_2010_2026_with_for_
 SITE_FELLOWSHIP_LEAD_CITATIONS_CSV = SITE_DIR / "arc_fellowships_lead_citations.csv"
 SITE_GRANT_SUMMARIES_JSON = SITE_DIR / "grant_summaries.json"
 SITE_YEARLY_FUNDING_STATS_JSON = SITE_DIR / "yearly_funding_stats.json"
+SITE_UNIVERSITY_TRENDS_JSON = SITE_DIR / "university_trends_grants.json"
