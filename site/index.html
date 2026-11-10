@@ -15,128 +15,271 @@
     <title>ARC Discovery Projects Analysis Hub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --bg: #f6f7f9;
+            --surface: #ffffff;
+            --ink: #0f172a;
+            --muted: #5b6474;
+            --line: #e5e7eb;
+            --accent: #2563eb;
+            --accent-soft: #eef3ff;
+        }
+
         body {
-            background: #f8f9fa;
+            background: var(--bg);
             min-height: 100vh;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            color: #333;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            color: var(--ink);
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
-        
+
         .hero-section {
-            padding: 60px 0;
+            padding: 72px 0 56px;
             text-align: center;
-            background: white;
-            border-bottom: 1px solid #e9ecef;
+            background:
+                radial-gradient(60% 120% at 50% 0%, var(--accent-soft) 0%, rgba(238,243,255,0) 70%),
+                var(--surface);
+            border-bottom: 1px solid var(--line);
         }
-        
-        .hero-title {
-            font-size: 2.5rem;
+
+        .hero-eyebrow {
+            display: inline-block;
+            font-size: 0.8rem;
             font-weight: 600;
-            margin-bottom: 1rem;
-            color: #212529;
+            color: var(--accent);
+            background: var(--surface);
+            border: 1px solid #dbe4ff;
+            border-radius: 999px;
+            padding: 4px 14px;
+            margin-bottom: 18px;
         }
-        
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            margin-bottom: 14px;
+            color: var(--ink);
+        }
+
         .hero-subtitle {
             font-size: 1.1rem;
-            margin-bottom: 0;
-            color: #6c757d;
-            font-weight: 400;
-        }
-        
-        .card-container {
-            max-width: 1000px;
+            max-width: 640px;
             margin: 0 auto;
-            padding: 60px 20px;
+            color: var(--muted);
         }
-        
-        .analysis-card {
-            background: white;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 20px;
-            transition: all 0.2s ease;
+
+        .card-container {
+            max-width: 1040px;
+            margin: 0 auto;
+            padding: 56px 20px 72px;
         }
-        
-        .analysis-card:hover {
-            border-color: #007bff;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-            color: #007bff;
-        }
-        
-        .card-title {
-            font-size: 1.5rem;
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-size: 0.78rem;
             font-weight: 600;
-            margin-bottom: 10px;
-            color: #212529;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin: 48px 0 4px;
         }
-        
+
+        .section-heading::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: var(--line);
+        }
+
+        .section-heading:first-child {
+            margin-top: 0;
+        }
+
+        .section-subtitle {
+            font-size: 0.95rem;
+            color: var(--muted);
+            margin-bottom: 18px;
+        }
+
+        .analysis-card {
+            position: relative;
+            height: 100%;
+            background: var(--surface);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 28px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-3px);
+            border-color: #c7d2fe;
+            box-shadow: 0 14px 32px -14px rgba(15, 23, 42, 0.22);
+        }
+
+        .card-inner {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            height: 100%;
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            font-size: 1.15rem;
+            margin-bottom: 18px;
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            margin-bottom: 8px;
+            color: var(--ink);
+        }
+
+        .card-title .badge {
+            vertical-align: middle;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            color: #92400e;
+            background: #fef3c7 !important;
+        }
+
         .card-description {
-            font-size: 1rem;
-            color: #6c757d;
+            flex: 1;
+            font-size: 0.95rem;
+            color: var(--muted);
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.55;
         }
-        
+
         .btn-explore {
-            background: #007bff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            color: white;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 0.92rem;
             text-decoration: none;
-            display: inline-block;
         }
-        
+
+        .btn-explore i {
+            display: none;
+        }
+
+        .btn-explore::before {
+            content: "\2192";
+            order: 1;
+            transition: transform 0.2s ease;
+        }
+
+        .analysis-card:hover .btn-explore::before {
+            transform: translateX(4px);
+        }
+
         .btn-explore:hover {
-            background: #0056b3;
-            color: white;
-            text-decoration: none;
+            color: var(--accent);
         }
-        
+
+        .analysis-card.featured {
+            border: none;
+            color: #fff;
+            background:
+                radial-gradient(80% 140% at 100% 0%, rgba(96, 165, 250, 0.35) 0%, rgba(96, 165, 250, 0) 60%),
+                linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            padding: 36px;
+        }
+
+        .featured .card-icon {
+            color: #fff;
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .featured .card-title {
+            color: #fff;
+            font-size: 1.6rem;
+        }
+
+        .featured .card-description {
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 1.02rem;
+            margin-bottom: 0;
+        }
+
+        .featured .btn-explore {
+            color: var(--ink);
+            background: #fff;
+            border-radius: 999px;
+            padding: 10px 20px;
+            margin-top: 22px;
+        }
+
+        @media (min-width: 992px) {
+            .featured .card-inner {
+                display: grid;
+                grid-template-columns: auto 1fr auto;
+                grid-template-areas:
+                    "icon title btn"
+                    "icon desc btn";
+                column-gap: 24px;
+                align-items: center;
+            }
+            .featured .card-icon { grid-area: icon; margin: 0; width: 64px; height: 64px; font-size: 1.6rem; border-radius: 16px; }
+            .featured .card-title { grid-area: title; align-self: end; }
+            .featured .card-description { grid-area: desc; align-self: start; }
+            .featured .btn-explore { grid-area: btn; margin: 0; white-space: nowrap; }
+        }
+
         .footer {
             text-align: center;
-            padding: 30px 0;
-            color: #6c757d;
+            padding: 32px 0;
+            color: var(--muted);
             font-size: 0.85rem;
-            background: white;
-            border-top: 1px solid #e9ecef;
+            background: var(--surface);
+            border-top: 1px solid var(--line);
         }
-        
+
         .footer a {
-            color: #007bff;
+            color: var(--accent);
             text-decoration: none;
         }
-        
+
         .footer a:hover {
             text-decoration: underline;
         }
-        
+
         @media (max-width: 768px) {
-            .hero-title {
-                font-size: 2rem;
+            .hero-section {
+                padding: 48px 0 40px;
             }
-            
+
+            .hero-title {
+                font-size: 2.1rem;
+            }
+
             .hero-subtitle {
                 font-size: 1rem;
             }
-            
-            .analysis-card {
-                padding: 25px 20px;
-            }
-            
-            .card-title {
-                font-size: 1.3rem;
+
+            .analysis-card,
+            .analysis-card.featured {
+                padding: 24px 20px;
             }
         }
     </style>
@@ -144,10 +287,8 @@
 <body>
     <div class="hero-section">
         <div class="container">
-            <h1 class="hero-title">
-                <i class="fas fa-chart-line me-3"></i>
-                ARC Research Hub
-            </h1>
+            <span class="hero-eyebrow">Australian Research Council grants &middot; 2010&ndash;2026</span>
+            <h1 class="hero-title">ARC Research Hub</h1>
             <p class="hero-subtitle">
                 Comprehensive analysis and visualization tools for Australian Research Council Discovery Projects and Fellowship data
             </p>
@@ -161,10 +302,77 @@
     </div>
 
     <div class="card-container">
-        <div class="row">
-            <div class="col-lg-4 col-md-6">
+        <h2 class="section-heading">Start here</h2>
+        <p class="section-subtitle">A guided overview of the main findings</p>
+        <div class="row g-3">
+            <div class="col-12">
+                <div class="analysis-card featured">
+                    <div class="card-inner">
+                        <div class="card-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <h2 class="card-title">The Story in 14 Slides</h2>
+                        <p class="card-description">
+                            Fewer, bigger, more concentrated: a guided overview of ARC grants 2010&ndash;2026, from overall funding
+                            to fields of research, Go8 vs others, states and individual universities.
+                        </p>
+                        <a href="arc_funding_story.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
+                            <i class="fas fa-book-open me-2"></i>
+                            Read the story
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-heading">Trends over time</h2>
+        <p class="section-subtitle">How awards, funding and university shares change year by year</p>
+        <div class="row g-3">
+            <div class="col-md-6">
                 <div class="analysis-card">
-                    <div class="text-center">
+                    <div class="card-inner">
+                        <div class="card-icon">
+                            <i class="fas fa-university"></i>
+                        </div>
+                        <h2 class="card-title">Grants by University over Time</h2>
+                        <p class="card-description">
+                            How each university's Discovery Project and fellowship counts change year by year, 2010&ndash;2026,
+                            filterable by scheme and FoR code (FoR 2008 divisions mapped to FoR 2020).
+                        </p>
+                        <a href="arc_university_trends.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Open university trends
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="analysis-card">
+                    <div class="card-inner">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-area"></i>
+                        </div>
+                        <h2 class="card-title">Yearly Awards &amp; Funding</h2>
+                        <p class="card-description">
+                            Award counts and median funding at announcement by year for Discovery Projects, Linkage Projects, and fellowship schemes
+                            (DECRA, Future, Laureate, Industry Laureate), 2010&ndash;2026.
+                        </p>
+                        <a href="arc_yearly_funding_trends.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Open trends
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 class="section-heading">By scheme</h2>
+        <p class="section-subtitle">Universities and fields of research within each scheme</p>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="analysis-card">
+                    <div class="card-inner">
                         <div class="card-icon">
                             <i class="fas fa-university"></i>
                         </div>
@@ -174,17 +382,17 @@
                             universities and Fields of Research (FoR) codes. Explore research patterns and institutional strengths 
                             in different academic disciplines from 2010-2026.
                         </p>
-                        <a href="arc_university_for_visualization.html" target="_blank" rel="noopener noreferrer" class="btn-explore">
+                        <a href="arc_university_for_visualization.html" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
                             <i class="fas fa-chart-bar me-2"></i>
                             Explore Discovery Projects
                         </a>
                     </div>
                 </div>
             </div>
-            
-            <div class="col-lg-4 col-md-6">
+
+            <div class="col-md-6">
                 <div class="analysis-card">
-                    <div class="text-center">
+                    <div class="card-inner">
                         <div class="card-icon">
                             <i class="fas fa-award"></i>
                         </div>
@@ -193,17 +401,21 @@
                             Interactive visualization of ARC Fellowship schemes including DECRA, Future Fellowships, and Laureate Fellowships. 
                             Explore fellowship distribution across universities and research areas from 2010-2026 (including funded 2026 DECRA where published on the ARC Data Portal).
                         </p>
-                        <a href="arc_fellowship_visualization.html" target="_blank" rel="noopener noreferrer" class="btn-explore">
+                        <a href="arc_fellowship_visualization.html" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
                             <i class="fas fa-chart-bar me-2"></i>
                             Explore Fellowships
                         </a>
                     </div>
                 </div>
             </div>
-            
+        </div>
+
+        <h2 class="section-heading">Researchers</h2>
+        <p class="section-subtitle">Chief investigators, citations and gender</p>
+        <div class="row g-3">
             <div class="col-lg-4 col-md-6">
                 <div class="analysis-card">
-                    <div class="text-center">
+                    <div class="card-inner">
                         <div class="card-icon">
                             <i class="fas fa-users"></i>
                         </div>
@@ -213,17 +425,17 @@
                             research patterns, and performance metrics. Filter by FoR codes and years to discover leading researchers 
                             and their contributions to Discovery Projects.
                         </p>
-                        <a href="arc_analysis_optimized.html" target="_blank" rel="noopener noreferrer" class="btn-explore">
+                        <a href="arc_analysis_optimized.html" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
                             <i class="fas fa-search me-2"></i>
                             View Rankings
                         </a>
                     </div>
                 </div>
             </div>
-            
+
             <div class="col-lg-4 col-md-6">
                 <div class="analysis-card">
-                    <div class="text-center">
+                    <div class="card-inner">
                         <div class="card-icon">
                             <i class="fas fa-quote-right"></i>
                         </div>
@@ -232,7 +444,7 @@
                             Mean or median OpenAlex citations (through each grant&rsquo;s funding commencement year) for the lead chief investigator,
                             by year (funding years from <strong>2010</strong> onward), with FoR filters; top-level series are <strong>DP</strong>, <strong>DECRA</strong>, and <strong>other fellowships</strong>.
                         </p>
-                        <a href="lead_ci_citations_visualization.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore">
+                        <a href="lead_ci_citations_visualization.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
                             <i class="fas fa-chart-line me-2"></i>
                             Open visualization
                         </a>
@@ -242,64 +454,7 @@
 
             <div class="col-lg-4 col-md-6">
                 <div class="analysis-card">
-                    <div class="text-center">
-                        <div class="card-icon">
-                            <i class="fas fa-chart-area"></i>
-                        </div>
-                        <h2 class="card-title">Yearly Awards &amp; Funding</h2>
-                        <p class="card-description">
-                            Award counts and median funding at announcement by year for Discovery Projects, Linkage Projects, and fellowship schemes
-                            (DECRA, Future, Laureate, Industry Laureate), 2010&ndash;2026.
-                        </p>
-                        <a href="arc_yearly_funding_trends.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore">
-                            <i class="fas fa-chart-line me-2"></i>
-                            Open trends
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="analysis-card">
-                    <div class="text-center">
-                        <div class="card-icon">
-                            <i class="fas fa-university"></i>
-                        </div>
-                        <h2 class="card-title">Grants by University over Time</h2>
-                        <p class="card-description">
-                            How each university's Discovery Project and fellowship counts change year by year, 2010&ndash;2026,
-                            filterable by scheme and FoR code (FoR 2008 divisions mapped to FoR 2020).
-                        </p>
-                        <a href="arc_university_trends.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore">
-                            <i class="fas fa-chart-line me-2"></i>
-                            Open university trends
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="analysis-card">
-                    <div class="text-center">
-                        <div class="card-icon">
-                            <i class="fas fa-book-open"></i>
-                        </div>
-                        <h2 class="card-title">The Story in 14 Slides</h2>
-                        <p class="card-description">
-                            Fewer, bigger, more concentrated: a guided overview of ARC grants 2010&ndash;2026, from overall funding
-                            to fields of research, Go8 vs others, states and individual universities.
-                        </p>
-                        <a href="arc_funding_story.html?v=__GITHUB_RUN_NUMBER__" target="_blank" rel="noopener noreferrer" class="btn-explore">
-                            <i class="fas fa-book-open me-2"></i>
-                            Read the story
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-lg-4 col-md-6">
-                <div class="analysis-card">
-                    <div class="text-center">
+                    <div class="card-inner">
                         <div class="card-icon">
                             <i class="fas fa-venus-mars"></i>
                         </div>
@@ -309,7 +464,7 @@
                             Features comprehensive three-tier methodology with web search, AI analysis, and manual review 
                             for gender identification insights.
                         </p>
-                        <a href="https://ht-timchen.github.io/academic-gender-search/" target="_blank" rel="noopener noreferrer" class="btn-explore">
+                        <a href="https://ht-timchen.github.io/academic-gender-search/" target="_blank" rel="noopener noreferrer" class="btn-explore stretched-link">
                             <i class="fas fa-external-link-alt me-2"></i>
                             Explore Analysis
                         </a>
