@@ -154,6 +154,8 @@ We checked. For every Discovery Project since 2016, we took the lead investigato
 
 *[Dot plot.]* And look at who *is* above the line. QUT, Curtin and RMIT lead CIs are more cited than about **60%** of their peers. Monash, the biggest winner of all, sits slightly *below* the middle. Monash wins on volume. The technology universities are winning with fewer, but very well-cited, people.
 
+*[Orange box.]* Now, one way to read this is a **halo effect**. Go8 researchers are generally more cited, so you'd expect Go8 *winners* to be more cited too. They aren't. That would fit a world where a Go8 address carries a less-cited lead over the line, while someone at QUT needs a stronger record to win. And it's not that the Go8 lets more juniors lead: the career ages are identical. But we only see the winners, not the applicants, so this is a hypothesis, not a finding.
+
 Two more things. A stronger citation record buys you only a slightly bigger grant. And the bar hasn't risen: lead CIs' citations have doubled since 2016, but so has the whole of science's.
 
 So if citations don't explain who wins, something else does: field, institution, team, the proposal itself. And this data can't see any of those.
