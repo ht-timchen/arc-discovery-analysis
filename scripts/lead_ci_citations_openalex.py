@@ -8,6 +8,13 @@ Lead ORCID: first entry in `chief_investigators_orcids` (Discovery) or
 Uses OpenAlex Author counts_by_year: for funding year Y, citations = sum of cited_by_count
 for entries with entry.year <= Y. Award year proxy: funding_commencement_year.
 
+Caveat: in the March 2026 cache (outputs/cache/openalex_authors.json), counts_by_year was
+keyed by PUBLICATION year (citations counted at fetch time to works published that year),
+so the column is "citations, as of the fetch, to works published up to Y", not citations
+held at award. Live OpenAlex now returns citations RECEIVED per year (2012+ only), so a
+fresh fetch would change the column's meaning. For a time-comparable measure use
+lead_ci_recent_citations_openalex.py.
+
 By default rows with funding_commencement_year >= 2010 are enriched; raise the floor with
 --min-funding-year to skip older years and reduce API calls.
 

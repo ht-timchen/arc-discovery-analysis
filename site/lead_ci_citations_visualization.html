@@ -14,7 +14,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Bare URLs are heavily cached on github.io; deploy workflow replaces __GITHUB_RUN_NUMBER__. -->
     <meta http-equiv="Cache-Control" content="no-cache" />
-    <title>Lead CI citations by award year (OpenAlex)</title>
+    <title>Lead CI citations to pre-award papers (OpenAlex)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f8f9fa; color: #2c3e50; }
@@ -58,9 +58,9 @@
 <body>
     <div class="container">
         <a class="back" href="index.html">&larr; Back to ARC Research Hub</a>
-        <h1>Lead CI citations at award year</h1>
-        <p class="subtitle">Y-axis: mean or median of OpenAlex cumulative citations (through each grant&rsquo;s <code>funding_commencement_year</code>) for the <strong>lead</strong> investigator (Discovery chief investigator; DECRA / other fellowship holder).</p>
-        <p class="subtitle">X-axis: funding commencement year (from <strong>2010</strong> onward, matching enrichment). Filter by FoR codes (same hierarchy as other Discovery tools).</p>
+        <h1>Lead CI citations at the time of award</h1>
+        <p class="subtitle">Y-axis: mean or median number of citations the <strong>lead</strong> investigator (Discovery chief investigator; DECRA / other fellowship holder) <strong>received in the three full calendar years before applying</strong>. For a grant starting in year Y (applied for early in Y&minus;1), that is citations received in Y&minus;4, Y&minus;3 and Y&minus;2: the recent track record an assessment panel could have seen.</p>
+        <p class="subtitle">X-axis: funding commencement year, from <strong>2016</strong> (OpenAlex yearly citation counts start in 2012). Every grant uses a window of the same length, so years are comparable, though citation volumes grow across science over time. Filter by FoR codes (same hierarchy as other Discovery tools).</p>
 
         <div id="err" class="error" style="display:none;"></div>
 
@@ -68,10 +68,11 @@
             <div class="control-group">
                 <label for="grant-type">Grant scheme</label>
                 <select id="grant-type">
-                    <option value="compare_all" selected id="opt-compare-all">DP + DECRA + other fellowships</option>
+                    <option value="compare_all" selected id="opt-compare-all">DP + DECRA + Future + Laureate</option>
                     <option value="discovery">Discovery Projects (DP)</option>
                     <option value="decra" id="opt-decra">DECRA</option>
-                    <option value="fellowship_other" id="opt-other-fs">Other fellowships</option>
+                    <option value="future" id="opt-future">Future Fellowships</option>
+                    <option value="fellowship_other" id="opt-other-fs">Laureate Fellowships</option>
                 </select>
             </div>
             <div class="control-group">
@@ -118,12 +119,12 @@
         </aside>
 
         <p class="footnote">
-            <strong>Method:</strong> Citations are from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> author profiles, summing per-calendar-year <code>cited_by_count</code> entries up to and including the grant&rsquo;s funding commencement year (not identical to Google Scholar).
+            <strong>Method:</strong> Citations are from <a href="https://openalex.org" target="_blank" rel="noopener">OpenAlex</a> author profiles (fetched November 2026), summing the per-year <code>cited_by_count</code> (citations received in that calendar year, as in a Google Scholar profile chart, though counts differ from Scholar) for years Y&minus;4 to Y&minus;2.
             Grants without a lead ORCID or with no OpenAlex match show as empty and are omitted from the mean/median for that year.
-            Only grants with <code>funding_commencement_year &ge; 2010</code> are included in the chart and in the enrichment script by default (<code>--min-funding-year</code>).
+            Only grants with <code>funding_commencement_year &ge; 2016</code> have a value, because OpenAlex yearly citation counts start in 2012.
             FoR filter: a grant is included if <code>for_all_codes</code> contains a code consistent with the selection (6-digit exact; 4-digit prefix; 2-digit division).
-            <br><strong>Discovery data:</strong> <code>arc_discovery_projects_2010_2026_with_for_lead_citations.csv</code> (lead = first chief investigator ORCID).
-            <strong>Fellowship data:</strong> <code>arc_fellowships_lead_citations.csv</code> (lead = first fellowship holder ORCID). The chart groups fellowships using <code>scheme_name</code>: <strong>DECRA</strong> = <em>Discovery Early Career Researcher Award</em>; <strong>other fellowships</strong> = Future, Laureate, and Industry Laureate. Build both with <code>python scripts/lead_ci_citations_openalex.py</code> and <code>python scripts/sync_site_assets.py</code>.
+            <br><strong>Discovery data:</strong> <code>arc_discovery_projects_2010_2026_with_for_lead_citations.csv</code> (lead = first ORCID listed on the grant; the ARC lists ORCIDs only for investigators who have one, so in about 10% of grants this is not the first-named chief investigator).
+            <strong>Fellowship data:</strong> <code>arc_fellowships_lead_citations.csv</code> (lead = first fellowship holder ORCID). The chart groups fellowships using <code>scheme_name</code>: <strong>DECRA</strong> = <em>Discovery Early Career Researcher Award</em>; <strong>Future Fellowships</strong> = <em>ARC Future Fellowships</em>; <strong>Laureate Fellowships</strong> = Australian Laureate and Industry Laureate (about 10&ndash;17 grants a year, not awarded every year). Build both with <code>python scripts/lead_ci_citations_openalex.py</code>, then <code>python scripts/lead_ci_recent_citations_openalex.py</code> and <code>python scripts/sync_site_assets.py</code>.
             <br><strong>Click a point</strong> on the line chart to show the top 50 grants for that year (matching the active series and FoR filters), sorted by lead citations. <strong>Project</strong> text is the ARC grant summary (truncated), from <code>grant_summaries.json</code> (<code>python scripts/generate_grant_summaries.py</code>).
             <br><strong>Shaded band</strong> (optional): with <strong>Mean</strong> aggregation, the band is an approximate <strong>95% confidence interval for the mean</strong> (±1.96 × standard error). With <strong>Median</strong> aggregation, the band is the <strong>interquartile range (Q1–Q3)</strong> of grant-level citations in that year — descriptive spread, <em>not</em> a confidence interval for the median.
         </p>
@@ -131,9 +132,11 @@
 
     <script>
         /** Only include grants with funding commencement year >= this value. */
-        const MIN_FUNDING_YEAR = 2010;
+        const MIN_FUNDING_YEAR = 2016;
         /** ARC CSV value for DECRA (Discovery Early Career Researcher Award). */
         const DECRA_SCHEME = 'Discovery Early Career Researcher Award';
+        /** ARC CSV value for Future Fellowships. */
+        const FUTURE_SCHEME = 'ARC Future Fellowships';
         const DETAIL_TOP_N = 50;
         /** Approximate 95% CI for the mean (normal approx). */
         const Z_CI_MEAN = 1.96;
@@ -183,10 +186,8 @@
             let pool;
             if (seriesKey === 'dp') {
                 pool = projectsDiscovery;
-            } else if (seriesKey === 'decra') {
-                pool = projectsFellowship.filter(p => isDecraScheme(p.schemeName));
             } else {
-                pool = projectsFellowship.filter(p => !isDecraScheme(p.schemeName));
+                pool = projectsFellowship.filter(p => fellowshipSeriesKey(p.schemeName) === seriesKey);
             }
             return pool
                 .filter(p =>
@@ -202,7 +203,7 @@
         }
 
         function renderDetailTable(rows, year, seriesKey) {
-            const labels = { dp: 'Discovery Projects', decra: 'DECRA', fellowship_other: 'Other fellowships' };
+            const labels = { dp: 'Discovery Projects', decra: 'DECRA', future: 'Future Fellowships', fellowship_other: 'Laureate Fellowships' };
             const title = document.getElementById('detail-title');
             const body = document.getElementById('detail-body');
             const label = labels[seriesKey] || seriesKey;
@@ -435,8 +436,12 @@
             return arr.reduce((s, v) => s + v, 0) / arr.length;
         }
 
-        function isDecraScheme(schemeName) {
-            return (schemeName || '') === DECRA_SCHEME;
+        /** Chart series for a fellowship scheme: 'decra', 'future' or 'fellowship_other' (Laureate). */
+        function fellowshipSeriesKey(schemeName) {
+            const s = schemeName || '';
+            if (s === DECRA_SCHEME) return 'decra';
+            if (s === FUTURE_SCHEME) return 'future';
+            return 'fellowship_other';
         }
 
         function unionSortedYears(...byYearObjs) {
@@ -464,10 +469,10 @@
             const hasFs = projectsFellowship.length > 0;
 
             const byDp = aggregateByYear(projectsDiscovery, d2, d4, d6);
-            const fsDecraList = projectsFellowship.filter(p => isDecraScheme(p.schemeName));
-            const fsOtherList = projectsFellowship.filter(p => !isDecraScheme(p.schemeName));
-            const byFsDecra = aggregateByYear(fsDecraList, d2, d4, d6);
-            const byFsOther = aggregateByYear(fsOtherList, d2, d4, d6);
+            const fsBy = key => aggregateByYear(projectsFellowship.filter(p => fellowshipSeriesKey(p.schemeName) === key), d2, d4, d6);
+            const byFsDecra = fsBy('decra');
+            const byFsFuture = fsBy('future');
+            const byFsOther = fsBy('fellowship_other');
 
             const filterFor = { d2, d4, d6 };
 
@@ -624,7 +629,7 @@
                     grantType,
                     years,
                     seriesByYear,
-                    seriesKeys: ['dp', 'decra', 'fellowship_other'],
+                    seriesKeys: seriesSpecs.map(s => s.seriesKey),
                     filterFor,
                     bandLow,
                     bandHigh,
@@ -669,19 +674,30 @@
                 return;
             }
 
+            if (grantType === 'future') {
+                oneLineFilled(
+                    byFsFuture,
+                    '#6f42c1',
+                    'rgba(111, 66, 193, 0.12)',
+                    `Future Fellowships — ${mlab} citations (OpenAlex)`,
+                    'future'
+                );
+                return;
+            }
+
             if (grantType === 'fellowship_other') {
                 oneLineFilled(
                     byFsOther,
                     '#fd7e14',
                     'rgba(253, 126, 20, 0.12)',
-                    `Other fellowships — ${mlab} citations (OpenAlex)`,
+                    `Laureate Fellowships — ${mlab} citations (OpenAlex)`,
                     'fellowship_other'
                 );
                 return;
             }
 
-            /* compare_all: DP + DECRA + other */
-            const years = unionSortedYears(byDp, byFsDecra, byFsOther);
+            /* compare_all: DP + DECRA + Future + Laureate */
+            const years = unionSortedYears(byDp, byFsDecra, byFsFuture, byFsOther);
             multiLine(
                 years,
                 [
@@ -700,23 +716,30 @@
                         seriesKey: 'decra',
                     },
                     {
-                        label: `Other fellowships — ${mlab}`,
+                        label: `Future Fellowships — ${mlab}`,
+                        byYear: byFsFuture,
+                        borderColor: '#6f42c1',
+                        bg: 'rgba(111, 66, 193, 0.06)',
+                        seriesKey: 'future',
+                    },
+                    {
+                        label: `Laureate Fellowships — ${mlab}`,
                         byYear: byFsOther,
                         borderColor: '#fd7e14',
                         bg: 'rgba(253, 126, 20, 0.06)',
                         seriesKey: 'fellowship_other',
                     },
                 ],
-                [byDp, byFsDecra, byFsOther],
+                [byDp, byFsDecra, byFsFuture, byFsOther],
             );
         }
 
         function parseLeadCitationCsv(text, includeScheme) {
-            const lines = text.split('\n').filter(l => l.trim());
+            const lines = text.split(/\r?\n/).filter(l => l.trim());
             const headers = parseCSVLine(lines[0]);
             const yi = headers.indexOf('funding_commencement_year');
             const fi = headers.indexOf('for_all_codes');
-            const ci = headers.indexOf('lead_ci_citations_openalex_through_award_year');
+            const ci = headers.indexOf('lead_ci_citations_received_3y_pre_application');
             const si = headers.indexOf('scheme_name');
             const codeIdx = headers.indexOf('code');
             const fpri = headers.indexOf('for_primary_names');
@@ -724,7 +747,7 @@
                 ? headers.indexOf('fellowship_holders')
                 : headers.indexOf('chief_investigators');
             if (yi === -1 || fi === -1 || ci === -1) {
-                throw new Error('CSV missing required columns (funding_commencement_year, for_all_codes, lead_ci_citations_openalex_through_award_year).');
+                throw new Error('CSV missing required columns (funding_commencement_year, for_all_codes, lead_ci_citations_received_3y_pre_application).');
             }
             if (includeScheme && si === -1) {
                 console.warn('Fellowship CSV missing scheme_name; DECRA vs other split will be wrong. Rebuild from arc_fellowships.csv.');
@@ -795,16 +818,19 @@
 
                 const optCompare = document.getElementById('opt-compare-all');
                 const optDecra = document.getElementById('opt-decra');
+                const optFuture = document.getElementById('opt-future');
                 const optOther = document.getElementById('opt-other-fs');
                 const grantSel = document.getElementById('grant-type');
                 if (!projectsFellowship.length) {
                     optCompare.disabled = true;
                     optDecra.disabled = true;
+                    optFuture.disabled = true;
                     optOther.disabled = true;
-                    optCompare.textContent = 'DP + DECRA + other (fellowship CSV missing)';
+                    optCompare.textContent = 'DP + fellowships (fellowship CSV missing)';
                     optDecra.textContent = 'DECRA (CSV missing)';
-                    optOther.textContent = 'Other fellowships (CSV missing)';
-                    if (grantSel.value === 'compare_all' || grantSel.value === 'decra' || grantSel.value === 'fellowship_other') {
+                    optFuture.textContent = 'Future Fellowships (CSV missing)';
+                    optOther.textContent = 'Laureate Fellowships (CSV missing)';
+                    if (grantSel.value !== 'discovery') {
                         grantSel.value = 'discovery';
                     }
                 }
