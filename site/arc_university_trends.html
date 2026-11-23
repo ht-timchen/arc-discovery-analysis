@@ -196,6 +196,7 @@
                     <select id="groupBy">
                         <option value="uni">University</option>
                         <option value="go8">Go8 vs non-Go8</option>
+                        <option value="big5">Big 5 vs other Go8 vs non-Go8</option>
                         <option value="state">State / territory</option>
                     </select>
                 </div>
@@ -271,6 +272,7 @@
                 &ldquo;Adelaide University&rdquo; (the merger of The University of Adelaide and the University of South Australia) while others
                 still use the original names. <strong>Go8</strong> = ANU, Melbourne, Sydney, UNSW, UQ, Monash, UWA and The University of Adelaide;
                 &ldquo;Adelaide University&rdquo; is also counted as Go8, so a few 2024&ndash;26 grants that originated at UniSA fall into Go8.
+                <strong>Big 5</strong> = Sydney, UNSW, Monash, Melbourne and UQ; <strong>Other Go8</strong> = ANU, UWA and Adelaide.
                 <strong>State</strong> is the administering organisation&rsquo;s state or territory (head office for multi-state bodies such as
                 Australian Catholic University and CSIRO).
                 Linkage Projects are not included (no FoR codes in the current crawl).
@@ -387,9 +389,14 @@
         }
 
         /** Line key for an organisation index under the current grouping. */
+        const BIG5 = new Set([
+            'The University of Sydney', 'The University of New South Wales', 'Monash University',
+            'The University of Melbourne', 'The University of Queensland',
+        ]);
         function groupKey(orgIdx) {
             const g = $('groupBy').value;
             if (g === 'go8') return D.org_meta[orgIdx].go8 ? 'Go8' : 'Non-Go8';
+            if (g === 'big5') return BIG5.has(D.orgs[orgIdx]) ? 'Big 5' : D.org_meta[orgIdx].go8 ? 'Other Go8' : 'Non-Go8';
             if (g === 'state') return D.org_meta[orgIdx].state;
             return orgIdx;
         }
@@ -512,8 +519,8 @@
             chart.options.scales.y.ticks.callback = (v) => (mode === 'share' ? `${v}%` : v);
             chart.update();
 
-            const unit = { uni: 'organisations', go8: 'groups', state: 'states/territories' }[$('groupBy').value];
-            $('panelTitle').textContent = { uni: 'Universities', go8: 'Groups', state: 'States' }[$('groupBy').value];
+            const unit = { uni: 'organisations', go8: 'groups', big5: 'groups', state: 'states/territories' }[$('groupBy').value];
+            $('panelTitle').textContent = { uni: 'Universities', go8: 'Groups', big5: 'Groups', state: 'States' }[$('groupBy').value];
             $('topBtn').textContent = byUni ? `Top ${TOP_N}` : 'All';
             $('summary').textContent =
                 `${total.toLocaleString('en-AU')} grants match (${f.from}–${f.to}) across ${ranked.length} ${unit}; ` +
