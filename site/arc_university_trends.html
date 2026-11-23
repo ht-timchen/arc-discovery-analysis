@@ -195,7 +195,7 @@
                     <label for="groupBy">Group by</label>
                     <select id="groupBy">
                         <option value="uni">University</option>
-                        <option value="go8">Go8 vs non-Go8</option>
+                        <option value="go8">Go8 vs others</option>
                         <option value="big5">Big 5 vs others</option>
                         <option value="state">State / territory</option>
                     </select>
@@ -395,7 +395,7 @@
         ]);
         function groupKey(orgIdx) {
             const g = $('groupBy').value;
-            if (g === 'go8') return D.org_meta[orgIdx].go8 ? 'Go8' : 'Non-Go8';
+            if (g === 'go8') return D.org_meta[orgIdx].go8 ? 'Go8' : 'Others';
             if (g === 'big5') return BIG5.has(D.orgs[orgIdx]) ? 'Big 5' : 'Others';
             if (g === 'state') return D.org_meta[orgIdx].state;
             return orgIdx;
