@@ -196,7 +196,7 @@
                     <select id="groupBy">
                         <option value="uni">University</option>
                         <option value="go8">Go8 vs non-Go8</option>
-                        <option value="big5">Big 5 vs other Go8 vs non-Go8</option>
+                        <option value="big5">Big 5 vs others</option>
                         <option value="state">State / territory</option>
                     </select>
                 </div>
@@ -272,7 +272,7 @@
                 &ldquo;Adelaide University&rdquo; (the merger of The University of Adelaide and the University of South Australia) while others
                 still use the original names. <strong>Go8</strong> = ANU, Melbourne, Sydney, UNSW, UQ, Monash, UWA and The University of Adelaide;
                 &ldquo;Adelaide University&rdquo; is also counted as Go8, so a few 2024&ndash;26 grants that originated at UniSA fall into Go8.
-                <strong>Big 5</strong> = Sydney, UNSW, Monash, Melbourne and UQ; <strong>Other Go8</strong> = ANU, UWA and Adelaide.
+                <strong>Big 5</strong> = Sydney, UNSW, Monash, Melbourne and UQ; <strong>Others</strong> = every other organisation.
                 <strong>State</strong> is the administering organisation&rsquo;s state or territory (head office for multi-state bodies such as
                 Australian Catholic University and CSIRO).
                 Linkage Projects are not included (no FoR codes in the current crawl).
@@ -396,7 +396,7 @@
         function groupKey(orgIdx) {
             const g = $('groupBy').value;
             if (g === 'go8') return D.org_meta[orgIdx].go8 ? 'Go8' : 'Non-Go8';
-            if (g === 'big5') return BIG5.has(D.orgs[orgIdx]) ? 'Big 5' : D.org_meta[orgIdx].go8 ? 'Other Go8' : 'Non-Go8';
+            if (g === 'big5') return BIG5.has(D.orgs[orgIdx]) ? 'Big 5' : 'Others';
             if (g === 'state') return D.org_meta[orgIdx].state;
             return orgIdx;
         }
